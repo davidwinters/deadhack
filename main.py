@@ -14,8 +14,15 @@ ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
-color_dark_wall = libtcod.Color(0, 0, 100)
-color_dark_ground = libtcod.Color(50, 50, 150)
+FOV_ALGO = 0 #default FOV algorithm in libtcod
+FOV_LIGHT_WALLS = True
+TORCH_RADIUS = 10
+
+color_dark_wall = libtcod.Color(80, 80, 80) #dark grey
+color_dark_ground = libtcod.Color(0, 0, 0)
+
+color_light_wall = libtcod.Color(255, 255, 255) #white
+color_light_ground = libtcod.Color(192, 192, 192) #light grey
 
 
 #########################################
@@ -27,6 +34,7 @@ class Tile(object):
 	#tiles on the map
 	def __init__(self, blocked, block_sight = None):
 		self.blocked = blocked
+		self.explored = False
 
 		#blcoked tiles also block sight
 		if block_sight is None: block_sight = blocked
@@ -50,8 +58,10 @@ class Thing(object):
 
 	def draw(self):
 		#set the color and then draw the character that represents this object at its position
-		libtcod.console_set_foreground_color(con, self.color)
-		libtcod.console_put_char(con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+		if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+
+			libtcod.console_set_foreground_color(con, self.color)
+			libtcod.console_put_char(con, self.x, self.y, self.char, libtcod.BKGND_NONE)
 		
 	def clear(self):
 		#erase the ghosts when moving around
@@ -98,9 +108,9 @@ def make_v_tunnel(y1, y2, x):
 		map[x][y].block_sight = False
 			
 def make_map():
-	global map
+	global map, player
 
-	#fill map with unblocked tiles
+	#fill map with blocked tiles because its True, if False all tiles would be unblocked
 	map = [[ Tile(True)
 		for y in range(MAP_HEIGHT) ]
 			for x in range(MAP_WIDTH) ]
@@ -142,7 +152,7 @@ def make_map():
 				(prev_x, prev_y) = rooms[num_rooms-1].center()
 
 				#draw a coin, if 1 go horizontal first, if 0 go vertical first
-				if libtcod.random_get_int(0, 0, 1) ==1:
+				if libtcod.random_get_int(0, 0, 1) == 1:
 					#go horizontal first
 					make_h_tunnel(prev_x, new_x, prev_y)
 					make_v_tunnel(prev_y, new_y, new_x)
@@ -157,18 +167,31 @@ def make_map():
 			num_rooms += 1
 	
 def render_all():
+	global fov_map, color_dark_wall, color_light_wall, color_dark_ground, color_light_ground, fov_recompute
+	
+	if fov_recompute:
+		#recompute FOV if needed
+		fov_recompute = False
+		libtcod.map_compute_fov(fov_map, player.x, player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)	
 
 	
-	for y in range(MAP_HEIGHT):
-		for x in range(MAP_WIDTH):
-			wall = map[x][y].block_sight
-			if wall:
-				#libtcod.console_set_back(con, x, y, color_dark_wall, libtcod.BKGND_SET)
-				libtcod.console_put_char_ex(con, x, y, '#', libtcod.white, libtcod.black)
-			else:
-				#libtcod.console_set_back(con, x, y, color_dark_ground, libtcod.BKGND_SET)
-				libtcod.console_put_char_ex(con, x, y, '.', libtcod.light_grey, libtcod.black)
+		for y in range(MAP_HEIGHT):
+			for x in range(MAP_WIDTH):
+				visible = libtcod.map_is_in_fov(fov_map, x, y)
+				wall = map[x][y].block_sight
+				if not visible:
+					if map[x][y].explored:
+						if wall:
+							libtcod.console_put_char_ex(con, x, y, '#', color_dark_wall, libtcod.black)
 
+						else:
+							libtcod.console_put_char_ex(con, x, y, '.', color_dark_ground, libtcod.black)
+				else:
+					if wall:
+						libtcod.console_put_char_ex(con, x, y, '#', color_light_wall, libtcod.black)
+					else:
+						libtcod.console_put_char_ex(con, x, y, '.', color_light_ground, libtcod.black)
+					map[x][y].explored = True
 	
 	#draw everything
 	for stuff in objects:
@@ -179,7 +202,7 @@ def render_all():
 #moving around
 #players cooridnates
 def handle_keys():
-	global playerx, playery
+	global playerx, playery, fov_recompute
 	
 	#console controls 
 	key = libtcod.console_wait_for_keypress(True) # THIS LINE IS SPECIFIC FOR TURN BASED
@@ -198,12 +221,19 @@ def handle_keys():
 
 	if libtcod.console_is_key_pressed(libtcod.KEY_UP):
 		player.move(0,-1)
+		fov_recompute = True
+
 	elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN):
 		player.move(0,1)
+		fov_recompute = True
+
 	elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT):
-		player.move(-1,0)	
+		player.move(-1,0)
+		fov_recompute = True
+			
 	elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT):
 		player.move(1,0)
+		fov_recompute = True
 
 	
 
@@ -226,7 +256,13 @@ objects = [npc, player]
 #create the map
 make_map()
 
+#create the FOV map
+fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
+for y in range(MAP_HEIGHT):
+	for x in range(MAP_WIDTH):
+		libtcod.map_set_properties(fov_map, x, y, not map[x][y].block_sight, not map[x][y].blocked)
 
+fov_recompute = True
 
 #########################################
 #  4 MAIN LOOP                           #
