@@ -13,6 +13,7 @@ MAP_HEIGHT = 45
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
+MAX_ROOM_MONSTERS = 3 
 
 FOV_ALGO = 0 #default FOV algorithm in libtcod
 FOV_LIGHT_WALLS = True
@@ -41,17 +42,19 @@ class Tile(object):
 		self.block_sight = block_sight
 
 
-class Thing(object):
+class Thing(object): #i renamed this to Thing instead of Object just cause
 	#create a generic class for pc, npc, monsters, items etc.
-	def __init__(self, x, y, char, color):
+	def __init__(self, x, y, char, name, color, blocks=False):
 		self.x = x
 		self.y = y
 		self.char = char
 		self.color = color
+		self.name = name
+		self.blocks = blocks
 
 	def move(self,dx,dy):
 
-		if not map[self.x +dx][self.y + dy].blocked: #check that the tile is not blocked
+		if not is_blocked(self.x + dx, self.y +dy): #check that the tile is not blocked
 			#move by given ammount
 			self.x += dx
 			self.y += dy
@@ -65,7 +68,7 @@ class Thing(object):
 		
 	def clear(self):
 		#erase the ghosts when moving around
-		libtcod.console_put_char_ex(con, self.x, self.y, '.', libtcod.light_grey, libtcod.BKGND_NONE)
+		libtcod.console_put_char_ex(con, self.x, self.y, ' ', libtcod.light_grey, libtcod.BKGND_NONE)
 
 
 class Rect(object):
@@ -139,6 +142,8 @@ def make_map():
 		#if not lets carve it
 		if not failed:
 			make_room(new_room)
+			#add some contents to this room, such as monsters
+			place_things(new_room)
 
 			#grabbing center coordinates for some reason
 			(new_x, new_y) = new_room.center()
@@ -165,6 +170,37 @@ def make_map():
 			#put the room in our list
 			rooms.append(new_room)
 			num_rooms += 1
+
+def place_things(room):
+	#random number of monsters
+	num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
+
+	for i in range(num_monsters):
+		#random position
+		x = libtcod.random_get_int(0, room.x1, room.x2)
+		y = libtcod.random_get_int(0, room.y1, room.y2)
+
+		#only place shit if the tile isn't blocked by another thing
+		if not is_blocked(x, y):
+			if libtcod.random_get_int(0, 0, 100) < 80: #80% chance of getting a dick
+				#make dick
+				monster = Thing(x, y, 'd', 'dick', libtcod.pink, blocks=True)
+			else:
+				#make balls
+				monster = Thing(x, y, 'o', 'dick', libtcod.pink, blocks=True)
+			
+			objects.append(monster)
+
+def is_blocked(x, y):
+	#tests if tiles are blocked by things
+	if map[x][y].blocked:
+		return True
+		
+	#check for things
+	for stuff in objects:
+		if stuff.blocks and stuff.x == x and stuff.y == y:
+			return True
+	return False
 	
 def render_all():
 	global fov_map, color_dark_wall, color_light_wall, color_dark_ground, color_light_ground, fov_recompute
@@ -247,11 +283,10 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'roguelike demo with libt
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT) #this has created an offscreen console we'll use instead of printing to the main console
 libtcod.sys_set_fps(LIMIT_FPS)
 
-player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', libtcod.white)
+player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True)
 
-npc = Thing(SCREEN_WIDTH/2 - 5, SCREEN_HEIGHT/2, '@', libtcod.yellow)
 
-objects = [npc, player]
+objects = [player]
 
 #create the map
 make_map()
