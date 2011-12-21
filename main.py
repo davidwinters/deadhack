@@ -95,13 +95,40 @@ class Thing(object): #i renamed this to Thing instead of Object just cause
 		#erase the ghosts when moving around
 		libtcod.console_put_char_ex(con, self.x, self.y, ' ', libtcod.light_grey, libtcod.BKGND_NONE)
 
+	def send_to_back(self):
+		global objects
+		objects.remove(self)
+		objects.insert(0, self)
+
 class Fighter(object):
 	#combat properties
-	def __init__(self, hp, defense, power):
+	def __init__(self, hp, defense, power, death_function=None):
 		self.max_hp = hp
 		self.hp = hp
 		self.defense = defense
 		self.power = power
+		self.death_function = death_function
+
+	def take_damage(self,damage):
+		#apply damage
+		if damage > 0:
+			self.hp -= damage
+		
+		if self.hp <= 0:
+			function = self.death_function
+			if function is not None:
+				function(self.owner)
+	
+	def attack(self, target):
+		#attack damage
+		damage = self.power - target.fighter.defense
+
+		if damage > 0:
+			#make the target take some damage
+			print self.owner.name.capitalize() + ' slaps ' + target.name + ' for ' + str(damage) + ' hit points.'
+			target.fighter.take_damage(damage)
+		else:
+			print self.owner.name.capitalize() + ' tries to slap ' + target.name + ' but misses'
 
 class BasicMonster(object):
 	#monster AI
@@ -116,7 +143,7 @@ class BasicMonster(object):
 
 			#close enough to attack
 			elif player.fighter.hp > 0:
-				print 'The ' + monster.name + ' rubs against your armor gently.'
+				monster.fighter.attack(player)
 		
 
 class Rect(object):
@@ -232,12 +259,12 @@ def place_things(room):
 		if not is_blocked(x, y):
 			if libtcod.random_get_int(0, 0, 100) < 80: #80% chance of getting a dick
 				#make dick
-				fighter_comp = Fighter(hp=10, defense=0, power=3)
+				fighter_comp = Fighter(hp=10, defense=0, power=3, death_function=monster_death)
 				ai_comp = BasicMonster()
 				monster = Thing(x, y, 'd', 'dick', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
 			else:
 				#make balls
-				fighter_comp = Fighter(hp=5, defense=0, power=1)
+				fighter_comp = Fighter(hp=5, defense=0, power=1, death_function=monster_death)
 				ai_comp = BasicMonster()
 				monster = Thing(x, y, '8', 'balls', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
 			
@@ -264,17 +291,37 @@ def player_move_or_attack(dx, dy):
 	#anything to attack?
 	target =None
 	for stuff in objects:
-		if stuff.x == x and stuff.y == y:
+		if stuff.fighter and stuff.x == x and stuff.y == y:
 			target = stuff
 			break
 	
 	#attack or move
 	if target is not None:
-		print 'The ' + target.name + 'stands erect in anticipation!'
+		player.fighter.attack(target)
 	else:
 		player.move(dx, dy)
 		fov_recompute = True
 
+def player_death(player):
+	#game over
+	global game_state
+	print 'These genitals slapped you to death'
+	game_state = 'dead'
+
+	#leave a corpse
+	player.char = '%'
+	player.color = libtcod.dark_red
+
+def monster_death(monster):
+	#leave a corpse
+	print monster.name.capitalize() + ' collapses in a puddle of unknown fluid, spent'
+	monster.char = '%'
+	monster.color = libtcod.dark_red
+	monster.blocks = False
+	monster.fighter = None
+	monster.ai = None
+	monster.name = 'heap of used' + monster.name
+	monster.send_to_back()
 
 def render_all():
 	global fov_map, color_dark_wall, color_light_wall, color_dark_ground, color_light_ground, fov_recompute
@@ -305,9 +352,15 @@ def render_all():
 	
 	#draw everything
 	for stuff in objects:
-		stuff.draw()
+		if stuff != player:
+			stuff.draw()
+	player.draw()
 	#we are "blitting" our offscreen console oot the root console
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+
+	#show the player's stats
+	libtcod.console_set_foreground_color(con, libtcod.white)
+	libtcod.console_print_left(0, 1, SCREEN_HEIGHT - 2, libtcod.BKGND_NONE, 'HP: ' + str(player.fighter.hp) + '/' + str(player.fighter.max_hp))
 
 #moving around
 #players cooridnates
@@ -359,7 +412,7 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'roguelike demo with libt
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT) #this has created an offscreen console we'll use instead of printing to the main console
 libtcod.sys_set_fps(LIMIT_FPS)
 
-fighter_comp = Fighter(hp=30, defense=2, power=5)
+fighter_comp = Fighter(hp=30, defense=2, power=5, death_function=player_death)
 player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
 
 game_state = 'playing'
