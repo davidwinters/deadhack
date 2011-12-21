@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+import math
 
 #########################################
 #  1 DEFINE PARAMETERS                  #
@@ -44,13 +45,19 @@ class Tile(object):
 
 class Thing(object): #i renamed this to Thing instead of Object just cause
 	#create a generic class for pc, npc, monsters, items etc.
-	def __init__(self, x, y, char, name, color, blocks=False):
+	def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None):
 		self.x = x
 		self.y = y
 		self.char = char
 		self.color = color
 		self.name = name
 		self.blocks = blocks
+		self.fighter = fighter
+		if self.fighter:
+			self.fighter.owner = self
+		self.ai = ai
+		if self.ai:
+			self.ai.owner = self
 
 	def move(self,dx,dy):
 
@@ -58,6 +65,24 @@ class Thing(object): #i renamed this to Thing instead of Object just cause
 			#move by given ammount
 			self.x += dx
 			self.y += dy
+
+	def move_towards(self, target_x, target_y):
+		#vector from this to that and distance
+		dx = target_x - self.x
+		dy = target_y - self.y
+		distance = math.sqrt(dx ** 2 + dy ** 2)
+
+		#normalize it to 1 and round
+		dx = int(round(dx /distance))
+		dy = int(round(dy / distance))
+		self.move(dx, dy)
+	
+	def distance_to(self, other):
+		#return the distance to another object
+		dx = other.x - self.x
+		dy = other.y - self.y
+		return math.sqrt(dx ** 2 + dy  ** 2)
+
 
 	def draw(self):
 		#set the color and then draw the character that represents this object at its position
@@ -70,6 +95,29 @@ class Thing(object): #i renamed this to Thing instead of Object just cause
 		#erase the ghosts when moving around
 		libtcod.console_put_char_ex(con, self.x, self.y, ' ', libtcod.light_grey, libtcod.BKGND_NONE)
 
+class Fighter(object):
+	#combat properties
+	def __init__(self, hp, defense, power):
+		self.max_hp = hp
+		self.hp = hp
+		self.defense = defense
+		self.power = power
+
+class BasicMonster(object):
+	#monster AI
+	def take_turn(self):
+		monster = self.owner
+		
+		if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
+
+			#move towards player
+			if monster.distance_to(player) >= 2:
+				monster.move_towards(player.x, player.y)
+
+			#close enough to attack
+			elif player.fighter.hp > 0:
+				print 'The ' + monster.name + ' rubs against your armor gently.'
+		
 
 class Rect(object):
 	#this is for dungeon building
@@ -184,10 +232,14 @@ def place_things(room):
 		if not is_blocked(x, y):
 			if libtcod.random_get_int(0, 0, 100) < 80: #80% chance of getting a dick
 				#make dick
-				monster = Thing(x, y, 'd', 'dick', libtcod.pink, blocks=True)
+				fighter_comp = Fighter(hp=10, defense=0, power=3)
+				ai_comp = BasicMonster()
+				monster = Thing(x, y, 'd', 'dick', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
 			else:
 				#make balls
-				monster = Thing(x, y, 'o', 'dick', libtcod.pink, blocks=True)
+				fighter_comp = Fighter(hp=5, defense=0, power=1)
+				ai_comp = BasicMonster()
+				monster = Thing(x, y, '8', 'balls', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
 			
 			objects.append(monster)
 
@@ -202,6 +254,28 @@ def is_blocked(x, y):
 			return True
 	return False
 	
+def player_move_or_attack(dx, dy):
+	global fov_recompute
+
+	#the player coordinates to move/attack to
+	x = player.x + dx
+	y = player.y + dy
+
+	#anything to attack?
+	target =None
+	for stuff in objects:
+		if stuff.x == x and stuff.y == y:
+			target = stuff
+			break
+	
+	#attack or move
+	if target is not None:
+		print 'The ' + target.name + 'stands erect in anticipation!'
+	else:
+		player.move(dx, dy)
+		fov_recompute = True
+
+
 def render_all():
 	global fov_map, color_dark_wall, color_light_wall, color_dark_ground, color_light_ground, fov_recompute
 	
@@ -248,28 +322,30 @@ def handle_keys():
 		libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 	
 	elif key.vk == libtcod.KEY_ESCAPE:
-		return  True # exit game
+		return  'exit' # exit game
 
 
 	#movement keys
 	#is_key_pressed is supposed to be for real-time and check_for_keypress is for TURN BASED 
 	#but it behaved strangely if i did not use is_key_pressed
-
-	if libtcod.console_is_key_pressed(libtcod.KEY_UP):
-		player.move(0,-1)
-		fov_recompute = True
-
-	elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN):
-		player.move(0,1)
-		fov_recompute = True
-
-	elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT):
-		player.move(-1,0)
-		fov_recompute = True
+	if game_state == 'playing':
+		if libtcod.console_is_key_pressed(libtcod.KEY_UP):
+			player_move_or_attack(0,-1)
 			
-	elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT):
-		player.move(1,0)
-		fov_recompute = True
+
+		elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN):
+			player_move_or_attack(0,1)
+			
+
+		elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT):
+			player_move_or_attack(-1,0)
+			
+				
+		elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT):
+			player_move_or_attack(1,0)
+			
+		else:
+			return 'didnt-take-turn'
 
 	
 
@@ -283,8 +359,11 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'roguelike demo with libt
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT) #this has created an offscreen console we'll use instead of printing to the main console
 libtcod.sys_set_fps(LIMIT_FPS)
 
-player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True)
+fighter_comp = Fighter(hp=30, defense=2, power=5)
+player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
 
+game_state = 'playing'
+player_action = None
 
 objects = [player]
 
@@ -316,6 +395,13 @@ while not libtcod.console_is_window_closed():
 		stuff.clear()
 
 	#handle keys
-	exit = handle_keys()
-	if exit:
+	player_action = handle_keys()
+	if player_action == 'exit':
 		break
+	
+	#monsters turn
+	if game_state == 'playing' and player_action != 'didnt-take-turn':
+		for stuff in objects:
+			if stuff.ai:
+				stuff.ai.take_turn()
+			
