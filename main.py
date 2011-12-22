@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import math
+import textwrap
 
 #########################################
 #  1 DEFINE PARAMETERS                  #
@@ -10,7 +11,7 @@ SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
 LIMIT_FPS = 20
 MAP_WIDTH = 80
-MAP_HEIGHT = 45
+MAP_HEIGHT = 43
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
@@ -19,6 +20,14 @@ MAX_ROOM_MONSTERS = 3
 FOV_ALGO = 0 #default FOV algorithm in libtcod
 FOV_LIGHT_WALLS = True
 TORCH_RADIUS = 10
+
+BAR_WIDTH = 20
+PANEL_HEIGHT = 7
+PANEL_Y = SCREEN_HEIGHT - PANEL_HEIGHT
+
+MSG_X = BAR_WIDTH + 2
+MSG_WIDTH = SCREEN_WIDTH - BAR_WIDTH - 2
+MSG_HEIGHT = PANEL_HEIGHT - 1
 
 color_dark_wall = libtcod.Color(80, 80, 80) #dark grey
 color_dark_ground = libtcod.Color(0, 0, 0)
@@ -125,10 +134,10 @@ class Fighter(object):
 
 		if damage > 0:
 			#make the target take some damage
-			print self.owner.name.capitalize() + ' slaps ' + target.name + ' for ' + str(damage) + ' hit points.'
+			message(self.owner.name.capitalize() + ' slaps ' + target.name + ' for ' + str(damage) + ' hit points.', libtcod.white)
 			target.fighter.take_damage(damage)
 		else:
-			print self.owner.name.capitalize() + ' tries to slap ' + target.name + ' but misses'
+			message(self.owner.name.capitalize() + ' tries to slap ' + target.name + ' but misses', libtcod.white)
 
 class BasicMonster(object):
 	#monster AI
@@ -305,7 +314,7 @@ def player_move_or_attack(dx, dy):
 def player_death(player):
 	#game over
 	global game_state
-	print 'These genitals slapped you to death'
+	message('These genitals slapped you to death', libtcod.white)
 	game_state = 'dead'
 
 	#leave a corpse
@@ -314,7 +323,7 @@ def player_death(player):
 
 def monster_death(monster):
 	#leave a corpse
-	print monster.name.capitalize() + ' collapses in a puddle of unknown fluid, spent'
+	message(monster.name.capitalize() + ' collapses in a puddle of unknown fluid, spent', libtcod.white)
 	monster.char = '%'
 	monster.color = libtcod.dark_red
 	monster.blocks = False
@@ -358,9 +367,22 @@ def render_all():
 	#we are "blitting" our offscreen console oot the root console
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
-	#show the player's stats
-	libtcod.console_set_foreground_color(con, libtcod.white)
-	libtcod.console_print_left(0, 1, SCREEN_HEIGHT - 2, libtcod.BKGND_NONE, 'HP: ' + str(player.fighter.hp) + '/' + str(player.fighter.max_hp))
+	#render GUI
+	libtcod.console_set_background_color(panel, libtcod.black)
+	libtcod.console_clear(panel)
+
+	#print game messages
+	y = 1
+	for (line, color) in game_msgs:
+		libtcod.console_set_foreground_color(panel, color)
+		libtcod.console_print_left(panel, MSG_X, y, libtcod.BKGND_NONE, line)
+		y += 1
+
+	#show player stats
+	render_bar(1, 1, BAR_WIDTH, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.light_red, libtcod.darker_red)
+
+	#blit onto root console
+	libtcod.console_blit(panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0, PANEL_Y)
 
 #moving around
 #players cooridnates
@@ -400,6 +422,35 @@ def handle_keys():
 		else:
 			return 'didnt-take-turn'
 
+def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
+	#render a bar	
+	bar_width = int(float(value) / maximum * total_width)
+
+	#background first
+	libtcod.console_set_background_color(panel, back_color)
+	libtcod.console_rect(panel, x, y, total_width, 1, False)
+
+	#put bar at top
+	libtcod.console_set_background_color(panel, bar_color)
+	if bar_width > 0:
+		libtcod.console_rect(panel, x, y, bar_width, 1, False)
+
+	#some text and values
+	libtcod.console_set_foreground_color(panel, libtcod.white)
+	libtcod.console_print_center(panel, x + total_width / 2, y, libtcod.BKGND_NONE, name + ': ' + str(value) + '/' + str(maximum))
+
+def message(new_msg, color = libtcod.white):
+	#break lines if you need
+	new_msg_lines = textwrap.wrap(new_msg, MSG_WIDTH)
+
+	for line in new_msg_lines:
+		#clear buffer
+		if len(game_msgs) == MSG_HEIGHT:
+			del game_msgs[0]
+
+		#add new messages
+		game_msgs.append( (line,color) )
+
 	
 
 #########################################
@@ -411,6 +462,7 @@ libtcod.console_set_custom_font('terminal10x10_gs_tc.png', libtcod.FONT_TYPE_GRE
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'roguelike demo with libtcod', False)
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT) #this has created an offscreen console we'll use instead of printing to the main console
 libtcod.sys_set_fps(LIMIT_FPS)
+panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
 
 fighter_comp = Fighter(hp=30, defense=2, power=5, death_function=player_death)
 player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
@@ -419,6 +471,7 @@ game_state = 'playing'
 player_action = None
 
 objects = [player]
+game_msgs = []
 
 #create the map
 make_map()
@@ -431,6 +484,10 @@ for y in range(MAP_HEIGHT):
 
 fov_recompute = True
 
+
+
+#a welcome message
+message('Welcome jerk! Prepare to get slapped by dicks and balls.', libtcod.red)
 #########################################
 #  4 MAIN LOOP                           #
 #                                       #
