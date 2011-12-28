@@ -29,6 +29,11 @@ MSG_X = BAR_WIDTH + 2
 MSG_WIDTH = SCREEN_WIDTH - BAR_WIDTH - 2
 MSG_HEIGHT = PANEL_HEIGHT - 1
 
+MAX_ROOM_ITEMS = 2
+
+INVENTORY_WIDTH = 50
+HEAL_AMOUNT = 4
+
 color_dark_wall = libtcod.Color(80, 80, 80) #dark grey
 color_dark_ground = libtcod.Color(0, 0, 0)
 
@@ -54,7 +59,7 @@ class Tile(object):
 
 class Thing(object): #i renamed this to Thing instead of Object just cause
 	#create a generic class for pc, npc, monsters, items etc.
-	def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None):
+	def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None, item=None):
 		self.x = x
 		self.y = y
 		self.char = char
@@ -67,6 +72,9 @@ class Thing(object): #i renamed this to Thing instead of Object just cause
 		self.ai = ai
 		if self.ai:
 			self.ai.owner = self
+		self.item = item
+		if self.item:
+			self.item.owner = self
 
 	def move(self,dx,dy):
 
@@ -138,6 +146,12 @@ class Fighter(object):
 			target.fighter.take_damage(damage)
 		else:
 			message(self.owner.name.capitalize() + ' tries to slap ' + target.name + ' but misses', libtcod.white)
+	
+	def heal(self, amount):
+		#heal
+		self.hp += amount
+		if self.hp > self.max_hp:
+			self.hp = self.max_hp
 
 class BasicMonster(object):
 	#monster AI
@@ -153,7 +167,32 @@ class BasicMonster(object):
 			#close enough to attack
 			elif player.fighter.hp > 0:
 				monster.fighter.attack(player)
-		
+
+class Item(object):
+	#items that can be picked up and used
+	def __init__(self, use_function=None):
+		self.use_function = use_function
+
+	def pick_up(self):
+		#add to inventory and remove from map
+		if len(inventory) >= 26:
+			message('Your inventory is full, cannot pick up ' + self.owner.name + '.', bitcod.red)
+		else:
+			inventory.append(self.owner)
+			objects.remove(self.owner)
+			message('You picked up a ' + self.owner.name + '!', libtcod.green)
+
+	def use(self):
+		#use_function if it exists
+		if self.use_function is None:
+			message('The ' + self.owner.name + ' cannot be used.')
+
+		else:
+			if self.use_function() != 'cancelled':
+				inventory.remove(self.owner) #destory item after use
+
+				
+
 
 class Rect(object):
 	#this is for dungeon building
@@ -261,8 +300,8 @@ def place_things(room):
 
 	for i in range(num_monsters):
 		#random position
-		x = libtcod.random_get_int(0, room.x1, room.x2)
-		y = libtcod.random_get_int(0, room.y1, room.y2)
+		x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
+		y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
 
 		#only place shit if the tile isn't blocked by another thing
 		if not is_blocked(x, y):
@@ -278,6 +317,23 @@ def place_things(room):
 				monster = Thing(x, y, '8', 'balls', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
 			
 			objects.append(monster)
+
+	#random number of items
+	num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
+
+	for i in range(num_items):
+		#random spot
+		x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
+		y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+
+		#only put on unblocked tiles
+		if not is_blocked(x, y):
+			#create health pot
+				item_comp = Item(use_function=cast_heal)
+				item = Thing(x, y, '!', 'healing potion', libtcod.violet, item=item_comp)
+
+				objects.append(item)
+				item.send_to_back() #items appear below other objects when drawn on the console
 
 def is_blocked(x, y):
 	#tests if tiles are blocked by things
@@ -420,6 +476,21 @@ def handle_keys():
 			player_move_or_attack(1,0)
 			
 		else:
+			#all other keys
+			key_char = chr(key.c)
+			if key_char == 'g':
+				#pick up item
+				for stuff in objects:
+					if stuff.x == player.x and stuff.y == player.y and stuff.item:
+						stuff.item.pick_up()
+						break
+			if key_char == 'i':
+				#show inventory
+				chosen_item = inventory_menu('Press the key next to an item to use it, or any other to cancel. \n')
+				if chosen_item is not None:
+					chosen_item.use()
+
+
 			return 'didnt-take-turn'
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
@@ -451,7 +522,64 @@ def message(new_msg, color = libtcod.white):
 		#add new messages
 		game_msgs.append( (line,color) )
 
+def menu(header, options, width):
+	if len(options) > 26: raise ValueError('Cannot have a menu with more than 26 options.')
+
+	#calc height of header
+	header_height = libtcod.console_height_left_rect(con, 0, 0, width, SCREEN_HEIGHT, header)
+	height = len(options) + header_height
+
+	#offscreen conolse
+	window = libtcod.console_new(width, height)
 	
+	#print the header
+	libtcod.console_set_foreground_color(window, libtcod.white)
+	libtcod.console_print_left_rect(window, 0, 0, width, height, libtcod.BKGND_NONE, header)
+	
+	y = header_height
+	letter_index= ord('a')
+	for option_text in options:
+		text = '(' + chr(letter_index) + ') ' + option_text
+		libtcod.console_print_left(window, 0, y, libtcod.BKGND_NONE, text)
+		y += 1
+		letter_index += 1
+	
+	#blit the contents to the main console
+	x = SCREEN_WIDTH/2 - width/2
+	y = SCREEN_HEIGHT/2 - height/2
+	libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
+
+	#wait for keypress
+	libtcod.console_flush()
+	key = libtcod.console_wait_for_keypress(True)
+
+	#convert ascii to index
+	index = key.c - ord('a')
+	if index >= 0 and index < len(options): return index
+	return None
+
+def inventory_menu(header):
+	#show a menu with each item of inventory as an option
+	if len(inventory) == 0:
+		options = ['Inventory is empty.']
+	else:
+		options = [item.name for item in inventory]
+
+	index = menu(header, options, INVENTORY_WIDTH)
+
+	#if item was chosen, return it
+	if index is None or len(inventory) == 0: return None
+	return inventory[index].item
+
+def cast_heal():
+	#heal the player
+	if player.fighter.hp == player.fighter.max_hp:
+		message(' You are already at full health.', libtcod.red)
+		return 'cancelled'
+
+	message('Your wounds start to feel better!', libtcod.light_violet)
+	player.fighter.heal(HEAL_AMOUNT)
+
 
 #########################################
 #  3 INSTANTIATE OUR CLASSES FOR GAME   #
@@ -472,6 +600,7 @@ player_action = None
 
 objects = [player]
 game_msgs = []
+inventory = []
 
 #create the map
 make_map()
