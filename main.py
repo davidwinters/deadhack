@@ -1,3 +1,15 @@
+##################################
+# TO DO							
+#
+# 1. finish tutorial spells and menu, last 2 parts
+# 2. elaborate spells, add polymorph etc.
+# 3. add a boss mob
+# 4. create companion player character
+#     a. allow users to view game session
+#	  b. allow users to control companion
+# 5. add multiple levels
+# 6. etc.
+
 import libtcodpy as libtcod
 import math
 import textwrap
@@ -32,7 +44,10 @@ MSG_HEIGHT = PANEL_HEIGHT - 1
 MAX_ROOM_ITEMS = 2
 
 INVENTORY_WIDTH = 50
+
 HEAL_AMOUNT = 4
+LIGHTNING_DAMAGE = 20
+LIGHTNING_RANGE = 5
 
 color_dark_wall = libtcod.Color(80, 80, 80) #dark grey
 color_dark_ground = libtcod.Color(0, 0, 0)
@@ -328,12 +343,18 @@ def place_things(room):
 
 		#only put on unblocked tiles
 		if not is_blocked(x, y):
-			#create health pot
+			dice = libtcod.random_get_int(0, 0, 100)
+			if dice < 70:
+				#create health pot
 				item_comp = Item(use_function=cast_heal)
 				item = Thing(x, y, '!', 'healing potion', libtcod.violet, item=item_comp)
-
-				objects.append(item)
-				item.send_to_back() #items appear below other objects when drawn on the console
+			else:
+				#create lightning bolt scroll
+				item_comp = Item(use_function=cast_lightning)
+				item = Thing(x, y, '?', 'scroll of static lightning', libtcod.light_yellow, item=item_comp)
+				
+			objects.append(item)
+			item.send_to_back() #items appear below other objects when drawn on the console
 
 def is_blocked(x, y):
 	#tests if tiles are blocked by things
@@ -580,6 +601,30 @@ def cast_heal():
 	message('Your wounds start to feel better!', libtcod.light_violet)
 	player.fighter.heal(HEAL_AMOUNT)
 
+def cast_lightning():
+	#find nearest enemy
+	monster = closest_monster(LIGHTNING_RANGE)
+	if monster is None: #none around
+		message('No enemy is near enough to strike.', libtcod.red)
+		return 'cancelled'
+	
+	#zaap
+	message('A random bolt of static electricity strikes the ' + monster.name + ' with a loud crack! The damage is ' + str(LIGHTNING_DAMAGE) + ' hit points.', libtcod.light_blue)
+	monster.fighter.take_damage(LIGHTNING_DAMAGE)
+
+def closest_monster(max_range):
+	#find nearest enemy
+	closest_enemy = None
+	closest_dist = max_range + 1
+
+	for object in objects:
+		if object.fighter and not object == player and libtcod.map_is_in_fov(fov_map, object.x, object.y):
+			#find distance
+			dist = player.distance_to(object)
+				if dist < closest_dist:
+					closest_enemy = object
+					closest_dist = dist
+	return closest_enemy
 
 #########################################
 #  3 INSTANTIATE OUR CLASSES FOR GAME   #
