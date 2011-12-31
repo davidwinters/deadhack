@@ -13,6 +13,7 @@
 import libtcodpy as libtcod
 import math
 import textwrap
+import shelve
 
 #########################################
 #  1 DEFINE PARAMETERS                  #
@@ -583,6 +584,8 @@ def menu(header, options, width):
 
 	#calc height of header
 	header_height = libtcod.console_height_left_rect(con, 0, 0, width, SCREEN_HEIGHT, header)
+	if header == '':
+		header_height = 0
 	height = len(options) + header_height
 
 	#offscreen conolse
@@ -613,6 +616,9 @@ def menu(header, options, width):
 	index = key.c - ord('a')
 	if index >= 0 and index < len(options): return index
 	return None
+
+def msgbox(text, width=50):
+	menu(text, [], width) #use menu() for message box
 
 def inventory_menu(header):
 	#show a menu with each item of inventory as an option
@@ -672,6 +678,30 @@ def closest_monster(max_range):
 				closest_dist = dist
 	return closest_enemy
 
+def main_menu():
+	while not libtcod.console_is_window_closed():
+		
+		#show game title
+		libtcod.console_print_center(0, SCREEN_WIDTH/2, SCREEN_HEIGHT/2-4, libtcod.BKGND_NONE, 'Dick Slayer')
+
+
+		#show options
+		choice = menu('', ['Play a new game', 'Continue last game', 'Quit'], 24)
+
+		if choice == 0: #new game
+			new_game()
+			play_game()
+		elif choice == 1: #load game
+			try:
+				load_game()
+			except:
+				msgbox('\n No saved game to load. \n', 24)
+				continue
+			play_game()	
+		elif choice == 2: #quit
+			break
+
+
 def new_game():
 	global player, inventory, game_msgs, game_state
 
@@ -695,6 +725,8 @@ def new_game():
 
 def initialize_fov():
 	global fov_recompute, fov_map
+
+	libtcod.console_clear(con) #reset console to black
 
 	fov_recompute = True
 
@@ -721,6 +753,7 @@ def play_game():
 		#handle keys
 		player_action = handle_keys()
 		if player_action == 'exit':
+			save_game()
 			break
 	
 		#monsters turn
@@ -728,7 +761,33 @@ def play_game():
 			for stuff in objects:
 				if stuff.ai:
 					stuff.ai.take_turn()
-			
+
+def save_game():
+	#open a new empty shelve possibly overwriting an old one
+	file = shelve.open('savegame', 'n')
+	file['map'] = map
+	file['objects'] = objects
+	file['player_index'] = objects.index(player) #position of player in objects list
+	file['inventory'] = inventory
+	file['game_msgs'] = game_msgs
+	file['game_state'] = game_state
+
+	file.close()			
+
+def load_game():
+	#open previously saved shelve
+	global map, objects, player, inventory, game_msgs, game_state
+
+	file = shelve.open('savegame', 'r')
+	map = file['map']
+	objects = file['objects']
+	player = objects[file['player_index']]
+	inventory = file['inventory']
+	game_msgs = file['game_msgs']
+	game_state = file['game_state']
+	file.close()
+
+	initialize_fov()
 
 #########################################
 #  3 INSTANTIATE OUR CLASSES FOR GAME   #
@@ -746,5 +805,4 @@ panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
 #  4 MAIN LOOP                           #
 #                                       #
 #########################################
-new_game()
-play_game()
+main_menu()
