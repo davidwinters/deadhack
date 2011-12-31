@@ -1,15 +1,3 @@
-##################################
-# TO DO							
-#
-# 1. finish tutorial spells and menu, last 2 parts
-# 2. elaborate spells, add polymorph etc.
-# 3. add a boss mob
-# 4. create companion player character
-#     a. allow users to view game session
-#	  b. allow users to control companion
-# 5. add multiple levels
-# 6. etc.
-
 import libtcodpy as libtcod
 import math
 import textwrap
