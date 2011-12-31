@@ -48,6 +48,8 @@ INVENTORY_WIDTH = 50
 HEAL_AMOUNT = 4
 LIGHTNING_DAMAGE = 20
 LIGHTNING_RANGE = 5
+CONFUSE_NUM_TURNS = 10
+CONFUSE_RANGE = 8
 
 color_dark_wall = libtcod.Color(80, 80, 80) #dark grey
 color_dark_ground = libtcod.Color(0, 0, 0)
@@ -183,6 +185,23 @@ class BasicMonster(object):
 			elif player.fighter.hp > 0:
 				monster.fighter.attack(player)
 
+class ConfusedMonster(object):
+	#AI for a confused monster.
+	def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
+		self.old_ai = old_ai
+		self.num_turns = num_turns
+
+	def take_turn(self):
+		if self.num_turns > 0:
+			#move random
+			self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1))
+			self.num_turns -= 1
+		else:#restore previous ai
+			self.owner.ai = self.old_ai
+			message('The ' + self.owner.name + ' is no longer confused!', libtcod.red)
+
+
+
 class Item(object):
 	#items that can be picked up and used
 	def __init__(self, use_function=None):
@@ -206,7 +225,14 @@ class Item(object):
 			if self.use_function() != 'cancelled':
 				inventory.remove(self.owner) #destory item after use
 
-				
+	def drop(self):
+		#add to map and remove from inventory
+		objects.append(self.owner)
+		inventory.remove(self.owner)
+		self.owner.x = player.x
+		self.owner.y = player.y
+		message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
+					
 
 
 class Rect(object):
@@ -249,7 +275,9 @@ def make_v_tunnel(y1, y2, x):
 		map[x][y].block_sight = False
 			
 def make_map():
-	global map, player
+	global map, objects
+
+	objects = [player]
 
 	#fill map with blocked tiles because its True, if False all tiles would be unblocked
 	map = [[ Tile(True)
@@ -348,6 +376,10 @@ def place_things(room):
 				#create health pot
 				item_comp = Item(use_function=cast_heal)
 				item = Thing(x, y, '!', 'healing potion', libtcod.violet, item=item_comp)
+			elif dice < 70 + 15:
+				#create confuse scroll
+				item_comp = Item(use_function=cast_confuse)
+				item = Thing(x, y, '?', 'scroll of confusion', libtcod.white, item=item_comp)
 			else:
 				#create lightning bolt scroll
 				item_comp = Item(use_function=cast_lightning)
@@ -510,7 +542,10 @@ def handle_keys():
 				chosen_item = inventory_menu('Press the key next to an item to use it, or any other to cancel. \n')
 				if chosen_item is not None:
 					chosen_item.use()
-
+			if key_char == 'd':
+				chosen_item = inventory_menu('Press they key next to an item to drop it, or any other to cancel. \n')
+				if chosen_item is not None:
+						chosen_item.drop()
 
 			return 'didnt-take-turn'
 
@@ -612,6 +647,17 @@ def cast_lightning():
 	message('A random bolt of static electricity strikes the ' + monster.name + ' with a loud crack! The damage is ' + str(LIGHTNING_DAMAGE) + ' hit points.', libtcod.light_blue)
 	monster.fighter.take_damage(LIGHTNING_DAMAGE)
 
+def cast_confuse():
+	#cast on nearest enemy
+	monster = closest_monster(CONFUSE_RANGE)
+	if monster is None: #none in range
+		message('No enemy is close enough to confuse.', libtcod.red)
+		return 'cancelled'
+	old_ai = monster.ai
+	monster.ai = ConfusedMonster(old_ai)
+	monster.ai.owner = monster
+	message('The ' + monster.name + '\'s eyes look vacant.', libtcod.light_green)	
+
 def closest_monster(max_range):
 	#find nearest enemy
 	closest_enemy = None
@@ -621,10 +667,68 @@ def closest_monster(max_range):
 		if object.fighter and not object == player and libtcod.map_is_in_fov(fov_map, object.x, object.y):
 			#find distance
 			dist = player.distance_to(object)
-				if dist < closest_dist:
-					closest_enemy = object
-					closest_dist = dist
+			if dist < closest_dist:
+				closest_enemy = object
+				closest_dist = dist
 	return closest_enemy
+
+def new_game():
+	global player, inventory, game_msgs, game_state
+
+	fighter_comp = Fighter(hp=30, defense=2, power=5, death_function=player_death)
+	player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
+
+	game_state = 'playing'
+	
+
+	objects = [player]
+	game_msgs = []
+	inventory = []
+
+	#create the map
+	make_map()
+
+	initialize_fov()
+	
+	#a welcome message
+	message('Welcome jerk! Prepare to get slapped by dicks and balls.', libtcod.red)
+
+def initialize_fov():
+	global fov_recompute, fov_map
+
+	fov_recompute = True
+
+	#create the FOV map
+	fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
+	for y in range(MAP_HEIGHT):
+		for x in range(MAP_WIDTH):
+			libtcod.map_set_properties(fov_map, x, y, not map[x][y].block_sight, not map[x][y].blocked)
+
+def play_game():
+	player_action = None
+	while not libtcod.console_is_window_closed():
+		#draw all the things	
+		render_all()
+		
+
+		#some other shit, flushing the console?
+		libtcod.console_flush()
+
+		#clear off the @ ghosts created by movement
+		for stuff in objects:
+			stuff.clear()
+
+		#handle keys
+		player_action = handle_keys()
+		if player_action == 'exit':
+			break
+	
+		#monsters turn
+		if game_state == 'playing' and player_action != 'didnt-take-turn':
+			for stuff in objects:
+				if stuff.ai:
+					stuff.ai.take_turn()
+			
 
 #########################################
 #  3 INSTANTIATE OUR CLASSES FOR GAME   #
@@ -637,55 +741,10 @@ con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT) #this has created an offs
 libtcod.sys_set_fps(LIMIT_FPS)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
 
-fighter_comp = Fighter(hp=30, defense=2, power=5, death_function=player_death)
-player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
 
-game_state = 'playing'
-player_action = None
-
-objects = [player]
-game_msgs = []
-inventory = []
-
-#create the map
-make_map()
-
-#create the FOV map
-fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
-for y in range(MAP_HEIGHT):
-	for x in range(MAP_WIDTH):
-		libtcod.map_set_properties(fov_map, x, y, not map[x][y].block_sight, not map[x][y].blocked)
-
-fov_recompute = True
-
-
-
-#a welcome message
-message('Welcome jerk! Prepare to get slapped by dicks and balls.', libtcod.red)
 #########################################
 #  4 MAIN LOOP                           #
 #                                       #
 #########################################
-while not libtcod.console_is_window_closed():
-	#draw all the things	
-	render_all()
-		
-
-	#some other shit, flushing the console?
-	libtcod.console_flush()
-
-	#clear off the @ ghosts created by movement
-	for stuff in objects:
-		stuff.clear()
-
-	#handle keys
-	player_action = handle_keys()
-	if player_action == 'exit':
-		break
-	
-	#monsters turn
-	if game_state == 'playing' and player_action != 'didnt-take-turn':
-		for stuff in objects:
-			if stuff.ai:
-				stuff.ai.take_turn()
-			
+new_game()
+play_game()
