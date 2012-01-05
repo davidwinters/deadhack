@@ -1,4 +1,5 @@
 from lib import libtcodpy as libtcod
+import spells
 import random
 import math
 
@@ -123,31 +124,32 @@ class Item(object):
 	def __init__(self, use_function=None):
 		self.use_function = use_function
 
-	def pick_up(self):
+	def pick_up(self, objects, inventory):
 		#add to inventory and remove from map
 		if len(inventory) >= 26:
-			message('Your inventory is full, cannot pick up ' + self.owner.name + '.', bitcod.red)
+			#message('Your inventory is full, cannot pick up ' + self.owner.name + '.', bitcod.red)
+			pass
 		else:
 			inventory.append(self.owner)
 			objects.remove(self.owner)
-			message('You picked up a ' + self.owner.name + '!', libtcod.green)
+			#message('You picked up a ' + self.owner.name + '!', libtcod.green)
 
-	def use(self):
+	def use(self, inventory, player, objects, fov_map):
 		#use_function if it exists
 		if self.use_function is None:
-			message('The ' + self.owner.name + ' cannot be used.')
-
+			#message('The ' + self.owner.name + ' cannot be used.')
+			pass
 		else:
-			if self.use_function() != 'cancelled':
+			if self.use_function(player,objects,fov_map) != 'cancelled':
 				inventory.remove(self.owner) #destory item after use
 
-	def drop(self):
+	def drop(self, objects, inventory):
 		#add to map and remove from inventory
 		objects.append(self.owner)
 		inventory.remove(self.owner)
 		self.owner.x = player.x
 		self.owner.y = player.y
-		message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
+		#message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
 
 def is_blocked(x, y, objects, map):
 	#tests if tiles are blocked by things
@@ -194,37 +196,31 @@ def make_monsters(objects, map, room, quantity):
 			
 			objects.append(monster)
 
+def make_items(objects, map, room, quantity):
 
-def place_things(room):
-	#random number of monsters
-	num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
-
-	#make_monsters(objects, room, num_monsters)
-
-	#random number of items
-	num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
-
-	for i in range(num_items):
+	for i in range(quantity):
 		#random spot
-		x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
-		y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+		x = random.randint(room.x1+1, room.x2-1)
+		y = random.randint(room.y1+1, room.y2-1)
 
 		#only put on unblocked tiles
-		if not is_blocked(x, y):
+		if not is_blocked(x, y, objects, map):
 			dice = libtcod.random_get_int(0, 0, 100)
 			if dice < 70:
 				#create health pot
-				item_comp = Item(use_function=cast_heal)
+				item_comp = Item(use_function=spells.cast_heal)
 				item = Thing(x, y, '!', 'healing potion', libtcod.violet, item=item_comp)
 			elif dice < 70 + 15:
 				#create confuse scroll
-				item_comp = Item(use_function=cast_confuse)
+				item_comp = Item(use_function=spells.cast_confuse)
 				item = Thing(x, y, '?', 'scroll of confusion', libtcod.white, item=item_comp)
 			else:
 				#create lightning bolt scroll
-				item_comp = Item(use_function=cast_lightning)
+				item_comp = Item(use_function=spells.cast_lightning)
 				item = Thing(x, y, '?', 'scroll of static lightning', libtcod.light_yellow, item=item_comp)
 				
 			objects.append(item)
-			item.send_to_back() #items appear below other objects when drawn on the console
+			item.send_to_back(objects) #items appear below other objects when drawn on the console
+
+
 

@@ -8,7 +8,7 @@ class Tile(object):
 		self.blocked = blocked
 		self.explored = False
 
-		#blcoked tiles also block sight
+		#blocked tiles also block sight
 		if block_sight is None: block_sight = blocked
 		self.block_sight = block_sight
 
@@ -53,7 +53,7 @@ def make_v_tunnel(y1, y2, x):
 
 
 			
-def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, player, objects, max_room_monsters): #pass it all our constants
+def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, player, objects, max_room_monsters, max_room_items): #pass it all our constants
 	global map
 
 	#objects = [player] ## move this shit elsewhere
@@ -91,7 +91,9 @@ def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, pla
 			#add some contents to this room, such as monsters
 			#place_things(new_room)##move this function somewhere else
 			num_monsters = random.randint(0, max_room_monsters)
-			doodads.make_monsters(objects, map, new_room, num_monsters )
+			num_items = random.randint(0, max_room_items)
+			doodads.make_monsters(objects, map, new_room, num_monsters)
+			doodads.make_items(objects, map, new_room, num_items)
 			
 			#grabbing center coordinates for some reason
 			(new_x, new_y) = new_room.center()
