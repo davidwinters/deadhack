@@ -1,15 +1,6 @@
 from lib import libtcodpy as libtcod
-from dickslayer import config
-
-class Tile(object):
-	#tiles on the map
-	def __init__(self, blocked, block_sight = None):
-		self.blocked = blocked
-		self.explored = False
-
-		#blcoked tiles also block sight
-		if block_sight is None: block_sight = blocked
-		self.block_sight = block_sight
+import math
+import dungeon
 
 
 class Thing(object): #i renamed this to Thing instead of Object just cause
@@ -33,7 +24,7 @@ class Thing(object): #i renamed this to Thing instead of Object just cause
 
 	def move(self,dx,dy):
 
-		if not is_blocked(self.x + dx, self.y +dy): #check that the tile is not blocked
+		if not dungeon.is_blocked(self.x + dx, self.y +dy): #check that the tile is not blocked
 			#move by given ammount
 			self.x += dx
 			self.y += dy
@@ -125,7 +116,7 @@ class BasicMonster(object):
 
 class ConfusedMonster(object):
 	#AI for a confused monster.
-	def __init__(self, old_ai, num_turns=config.CONFUSE_NUM_TURNS):
+	def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
 		self.old_ai = old_ai
 		self.num_turns = num_turns
 
@@ -170,23 +161,4 @@ class Item(object):
 		self.owner.x = player.x
 		self.owner.y = player.y
 		message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
-					
-
-
-class Rect(object):
-	#this is for dungeon building
-	def __init__(self, x, y, w, h):
-		self.x1 = x
-		self.y1 = y
-		self.x2 = x + w
-		self.y2 = y + h	
 	
-	def center(self):
-		center_x = (self.x1 + self.x2) / 2
-		center_y = (self.y1 + self.y2) / 2
-		return (center_x, center_y)
-	
-	def intersect(self, other):
-		#tell us if this rect intersects another
-		return (self.x1 <= other.x2 and self.x2 >= other.x1 and self.y1 <= other.y2 and self.y2 >= other.y1)
-

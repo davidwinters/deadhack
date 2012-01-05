@@ -1,5 +1,7 @@
 from lib import libtcodpy as libtcod
 from dickslayer import dungeon
+from dickslayer import doodads
+
 import math
 import textwrap
 import shelve
@@ -56,117 +58,7 @@ color_light_ground = libtcod.Color(192, 192, 192) #light grey
 
 
 
-class Thing(object): #i renamed this to Thing instead of Object just cause
-	#create a generic class for pc, npc, monsters, items etc.
-	def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None, item=None):
-		self.x = x
-		self.y = y
-		self.char = char
-		self.color = color
-		self.name = name
-		self.blocks = blocks
-		self.fighter = fighter
-		if self.fighter:
-			self.fighter.owner = self
-		self.ai = ai
-		if self.ai:
-			self.ai.owner = self
-		self.item = item
-		if self.item:
-			self.item.owner = self
-
-	def move(self,dx,dy):
-
-		if not is_blocked(self.x + dx, self.y +dy): #check that the tile is not blocked
-			#move by given ammount
-			self.x += dx
-			self.y += dy
-
-	def move_towards(self, target_x, target_y):
-		#vector from this to that and distance
-		dx = target_x - self.x
-		dy = target_y - self.y
-		distance = math.sqrt(dx ** 2 + dy ** 2)
-
-		#normalize it to 1 and round
-		dx = int(round(dx /distance))
-		dy = int(round(dy / distance))
-		self.move(dx, dy)
-	
-	def distance_to(self, other):
-		#return the distance to another object
-		dx = other.x - self.x
-		dy = other.y - self.y
-		return math.sqrt(dx ** 2 + dy  ** 2)
-
-
-	def draw(self):
-		#set the color and then draw the character that represents this object at its position
-		if libtcod.map_is_in_fov(fov_map, self.x, self.y):
-
-			libtcod.console_set_foreground_color(con, self.color)
-			libtcod.console_put_char(con, self.x, self.y, self.char, libtcod.BKGND_NONE)
-		
-	def clear(self):
-		#erase the ghosts when moving around
-		libtcod.console_put_char_ex(con, self.x, self.y, ' ', libtcod.light_grey, libtcod.BKGND_NONE)
-
-	def send_to_back(self):
-		global objects
-		objects.remove(self)
-		objects.insert(0, self)
-
-class Fighter(object):
-	#combat properties
-	def __init__(self, hp, defense, power, death_function=None):
-		self.max_hp = hp
-		self.hp = hp
-		self.defense = defense
-		self.power = power
-		self.death_function = death_function
-
-	def take_damage(self,damage):
-		#apply damage
-		if damage > 0:
-			self.hp -= damage
-		
-		if self.hp <= 0:
-			function = self.death_function
-			if function is not None:
-				function(self.owner)
-	
-	def attack(self, target):
-		#attack damage
-		damage = self.power - target.fighter.defense
-
-		if damage > 0:
-			#make the target take some damage
-			message(self.owner.name.capitalize() + ' slaps ' + target.name + ' for ' + str(damage) + ' hit points.', libtcod.white)
-			target.fighter.take_damage(damage)
-		else:
-			message(self.owner.name.capitalize() + ' tries to slap ' + target.name + ' but misses', libtcod.white)
-	
-	def heal(self, amount):
-		#heal
-		self.hp += amount
-		if self.hp > self.max_hp:
-			self.hp = self.max_hp
-
-class BasicMonster(object):
-	#monster AI
-	def take_turn(self):
-		monster = self.owner
-		
-		if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
-
-			#move towards player
-			if monster.distance_to(player) >= 2:
-				monster.move_towards(player.x, player.y)
-
-			#close enough to attack
-			elif player.fighter.hp > 0:
-				monster.fighter.attack(player)
-
+#classes removed	
 class ConfusedMonster(object):
 	#AI for a confused monster.
 	def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
@@ -180,105 +72,30 @@ class ConfusedMonster(object):
 			self.num_turns -= 1
 		else:#restore previous ai
 			self.owner.ai = self.old_ai
-			message('The ' + self.owner.name + ' is no longer confused!', libtcod.red)
-
-
-
-class Item(object):
-	#items that can be picked up and used
-	def __init__(self, use_function=None):
-		self.use_function = use_function
-
-	def pick_up(self):
-		#add to inventory and remove from map
-		if len(inventory) >= 26:
-			message('Your inventory is full, cannot pick up ' + self.owner.name + '.', bitcod.red)
-		else:
-			inventory.append(self.owner)
-			objects.remove(self.owner)
-			message('You picked up a ' + self.owner.name + '!', libtcod.green)
-
-	def use(self):
-		#use_function if it exists
-		if self.use_function is None:
-			message('The ' + self.owner.name + ' cannot be used.')
-
-		else:
-			if self.use_function() != 'cancelled':
-				inventory.remove(self.owner) #destory item after use
-
-	def drop(self):
-		#add to map and remove from inventory
-		objects.append(self.owner)
-		inventory.remove(self.owner)
-		self.owner.x = player.x
-		self.owner.y = player.y
-		message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
-					
+			message('The ' + self.owner.name + ' is no longer confused!', libtcod.red)		
 #map stuff removed from here
 
+def draw(x,y,char):
+	if libtcod.map_is_in_fov(fov_map, x, y):
+			libtcod.console_set_foreground_color(con, libtcod.white)
+			libtcod.console_put_char(con, x, y, char, libtcod.BKGND_NONE)
 
-def place_things(room):
-	#random number of monsters
-	num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
+def clear(x,y,char):
+	#erase the ghosts when moving around
+		libtcod.console_put_char_ex(con, x, y, ' ', libtcod.light_grey, libtcod.BKGND_NONE)
 
-	for i in range(num_monsters):
-		#random position
-		x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
-		y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+def initialize_fov():
+	global fov_recompute, fov_map
 
-		#only place shit if the tile isn't blocked by another thing
-		if not is_blocked(x, y):
-			if libtcod.random_get_int(0, 0, 100) < 80: #80% chance of getting a dick
-				#make dick
-				fighter_comp = Fighter(hp=10, defense=0, power=3, death_function=monster_death)
-				ai_comp = BasicMonster()
-				monster = Thing(x, y, 'd', 'dick', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
-			else:
-				#make balls
-				fighter_comp = Fighter(hp=5, defense=0, power=1, death_function=monster_death)
-				ai_comp = BasicMonster()
-				monster = Thing(x, y, '8', 'balls', libtcod.pink, blocks=True, fighter=fighter_comp, ai=ai_comp)
-			
-			objects.append(monster)
+	libtcod.console_clear(con) #reset console to black
 
-	#random number of items
-	num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
+	fov_recompute = True
 
-	for i in range(num_items):
-		#random spot
-		x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
-		y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
-
-		#only put on unblocked tiles
-		if not is_blocked(x, y):
-			dice = libtcod.random_get_int(0, 0, 100)
-			if dice < 70:
-				#create health pot
-				item_comp = Item(use_function=cast_heal)
-				item = Thing(x, y, '!', 'healing potion', libtcod.violet, item=item_comp)
-			elif dice < 70 + 15:
-				#create confuse scroll
-				item_comp = Item(use_function=cast_confuse)
-				item = Thing(x, y, '?', 'scroll of confusion', libtcod.white, item=item_comp)
-			else:
-				#create lightning bolt scroll
-				item_comp = Item(use_function=cast_lightning)
-				item = Thing(x, y, '?', 'scroll of static lightning', libtcod.light_yellow, item=item_comp)
-				
-			objects.append(item)
-			item.send_to_back() #items appear below other objects when drawn on the console
-
-def is_blocked(x, y):
-	#tests if tiles are blocked by things
-	if map[x][y].blocked:
-		return True
-		
-	#check for things
-	for stuff in objects:
-		if stuff.blocks and stuff.x == x and stuff.y == y:
-			return True
-	return False
+	#create the FOV map
+	fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
+	for y in range(MAP_HEIGHT):
+		for x in range(MAP_WIDTH):
+			libtcod.map_set_properties(fov_map, x, y, not map[x][y].block_sight, not map[x][y].blocked)
 	
 def player_move_or_attack(dx, dy):
 	global fov_recompute
@@ -296,12 +113,12 @@ def player_move_or_attack(dx, dy):
 	
 	#attack or move
 	if target is not None:
-		player.fighter.attack(target)
+		player.fighter.attack(target, objects)
 	else:
-		player.move(dx, dy)
+		player.move(dx, dy, objects, map)
 		fov_recompute = True
 
-def player_death(player):
+def player_death(player, objects):
 	#game over
 	global game_state
 	message('These genitals slapped you to death', libtcod.white)
@@ -311,16 +128,7 @@ def player_death(player):
 	player.char = '%'
 	player.color = libtcod.dark_red
 
-def monster_death(monster):
-	#leave a corpse
-	message(monster.name.capitalize() + ' collapses in a puddle of unknown fluid, spent', libtcod.white)
-	monster.char = '%'
-	monster.color = libtcod.dark_red
-	monster.blocks = False
-	monster.fighter = None
-	monster.ai = None
-	monster.name = 'heap of used' + monster.name
-	monster.send_to_back()
+
 
 def render_all():
 	global fov_map, color_dark_wall, color_light_wall, color_dark_ground, color_light_ground, fov_recompute
@@ -352,8 +160,8 @@ def render_all():
 	#draw everything
 	for stuff in objects:
 		if stuff != player:
-			stuff.draw()
-	player.draw()
+			draw(stuff.x, stuff.y, stuff.char)
+	draw(player.x, player.y, player.char)
 	#we are "blitting" our offscreen console oot the root console
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
@@ -585,8 +393,8 @@ def main_menu():
 def new_game():
 	global player, inventory, game_msgs, game_state, objects, map
 
-	fighter_comp = Fighter(hp=30, defense=2, power=5, death_function=player_death)
-	player = Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
+	fighter_comp = doodads.Fighter(hp=30, defense=2, power=5, death_function=player_death)
+	player = doodads.Thing(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', 'Joe', libtcod.white, blocks=True, fighter=fighter_comp)
 
 	game_state = 'playing'
 	
@@ -596,25 +404,14 @@ def new_game():
 	inventory = []
 
 	#create the map
-	map = dungeon.make_map(MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS, ROOM_MIN_SIZE, ROOM_MAX_SIZE, player)
+	map = dungeon.make_map(MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS, ROOM_MIN_SIZE, ROOM_MAX_SIZE, player, objects, MAX_ROOM_MONSTERS)
 
 	initialize_fov()
 	
 	#a welcome message
 	message('Welcome jerk! Prepare to get slapped by dicks and balls.', libtcod.red)
 
-def initialize_fov():
-	global fov_recompute, fov_map
 
-	libtcod.console_clear(con) #reset console to black
-
-	fov_recompute = True
-
-	#create the FOV map
-	fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
-	for y in range(MAP_HEIGHT):
-		for x in range(MAP_WIDTH):
-			libtcod.map_set_properties(fov_map, x, y, not map[x][y].block_sight, not map[x][y].blocked)
 
 def play_game():
 	player_action = None
@@ -628,7 +425,7 @@ def play_game():
 
 		#clear off the @ ghosts created by movement
 		for stuff in objects:
-			stuff.clear()
+			clear(stuff.x, stuff.y, stuff.char)
 
 		#handle keys
 		player_action = handle_keys()
@@ -640,7 +437,7 @@ def play_game():
 		if game_state == 'playing' and player_action != 'didnt-take-turn':
 			for stuff in objects:
 				if stuff.ai:
-					stuff.ai.take_turn()
+					stuff.ai.take_turn(player, fov_map, objects, map)
 
 def save_game():
 	#open a new empty shelve possibly overwriting an old one

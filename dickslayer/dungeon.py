@@ -1,4 +1,6 @@
+from lib import libtcodpy as libtcod
 import random
+import doodads
 
 class Tile(object):
 	#tiles on the map
@@ -48,9 +50,11 @@ def make_v_tunnel(y1, y2, x):
 	for y in range(min(y1, y2), max(y1, y2) + 1):
 		map[x][y].blocked = False
 		map[x][y].block_sight = False
+
+
 			
-def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, player): #pass it all our constants
-	global map, objects
+def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, player, objects, max_room_monsters): #pass it all our constants
+	global map
 
 	#objects = [player] ## move this shit elsewhere
 
@@ -86,7 +90,9 @@ def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, pla
 			make_room(new_room)
 			#add some contents to this room, such as monsters
 			#place_things(new_room)##move this function somewhere else
-
+			num_monsters = random.randint(0, max_room_monsters)
+			doodads.make_monsters(objects, map, new_room, num_monsters )
+			
 			#grabbing center coordinates for some reason
 			(new_x, new_y) = new_room.center()
 
@@ -114,3 +120,4 @@ def make_map(map_height, map_width, max_rooms, room_min_size, room_max_size, pla
 			rooms.append(new_room)
 			num_rooms += 1
 	return map
+
