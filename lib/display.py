@@ -17,3 +17,6 @@ def init():
     screen_width = 80
     screen_height = 80
     libtcod.console_init_root(screen_width, screen_height, 'deadhack', False)
+    libtcod.console_set_foreground_color(0, libtcod.white)
+    libtcod.console_print_left(0, 1, 1, libtcod.BKGND_NONE, '@')
+    libtcod.console_flush()
