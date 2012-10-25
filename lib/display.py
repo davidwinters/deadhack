@@ -5,8 +5,10 @@ from lib import libtcodpy as libtcod
 #
 # sets up graphics and draws it
 #
-def __init__():
-    
+
+
+def start():
+
     #set font for game
     libtcod.console_set_custom_font('terminal10x10_gs_tc.png',
                                     libtcod.FONT_TYPE_GREYSCALE |
@@ -14,5 +16,4 @@ def __init__():
     #init window
     screen_width = 80
     screen_height = 80
-    libtcod.console_init_root(screen_width, screen_height, 'deadhack', False) 
-
+    libtcod.console_init_root(screen_width, screen_height, 'deadhack', False)
