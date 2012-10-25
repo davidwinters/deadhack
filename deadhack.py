@@ -15,5 +15,5 @@ from lib import display
 #screen_height = 80
 #libtcod.console_init_root(screen_width, screen_height,
 #                                        'deadhack', False)
-display.start()
+display.init()
 print 'done!'

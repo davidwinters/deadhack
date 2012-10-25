@@ -7,7 +7,7 @@ from lib import libtcodpy as libtcod
 #
 
 
-def start():
+def init():
 
     #set font for game
     libtcod.console_set_custom_font('terminal10x10_gs_tc.png',
