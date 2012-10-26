@@ -14,29 +14,35 @@ from dh.lib import libtcodpy as libtcod
 #from lib import Player
 #I needed support methods for logic and didn't know where to put them
 from dh.game import support
+from dh.game import Player
 #
 # main method
 #
+
+#initialize player object
+player = Player.Player()
+#init gamemode (by default mid-game)
+mode = 'map'
 #init basic display items
-display.init()
+display.init(player)
 #using mode as a placeholder here for game state,
 #since we by default start mid-game.
-mode = 'map'
 
 
 #
 # main logic loop
 #
 while not display.console():
-    #draw() --what's this?
+    """ main loop """
+    display.draw(mode,player) 
 
-    #flush state to viewport this cycle
+    #flush state to viewport this cycle ?? not sure what it does yet!
     display.flush()
     
     #get user input for game loop
     key = libtcod.console_wait_for_keypress(True)
     #process key we're given
-    support.process_key(key,mode)
+    support.process_key(key,mode,player)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit

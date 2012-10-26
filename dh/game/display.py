@@ -1,5 +1,5 @@
 from ..lib import libtcodpy as libtcod
-
+import Player
 #
 # __init__
 #
@@ -7,7 +7,7 @@ from ..lib import libtcodpy as libtcod
 #
 
 
-def init():
+def init(player):
 
     #set font for game
     libtcod.console_set_custom_font('dh/assets/terminal10x10_gs_tc.png',
@@ -18,11 +18,19 @@ def init():
     screen_height = 80
     libtcod.console_init_root(screen_width, screen_height, 'deadhack', False)
     libtcod.console_set_foreground_color(0, libtcod.white)
-    #print an intiial actor?
-    libtcod.console_print_left(0, 1, 1, libtcod.BKGND_NONE, '@')
     #flush screen to viewport
     libtcod.console_flush()
 
+    #initialize playerlast
+
+
+def draw(mode,player):
+    """ draw the screen """
+    #if player has moved from last position
+    libtcod.console_print_left(0, player.lastx, player.lasty, libtcod.BKGND_NONE, ' ')
+    libtcod.console_print_left(0, player.x, player.y, libtcod.BKGND_NONE, '@')
+    #save this position for next iteration
+    libtcod.console_flush()
 #
 # logic for knowing main window is still open
 # used in main game loop
