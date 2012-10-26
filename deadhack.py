@@ -42,6 +42,7 @@ while not display.console():
     #get user input for game loop
     key = libtcod.console_wait_for_keypress(True)
     #process key we're given
+    display.clear(mode,player)
     support.process_key(key,mode,player)
     #once we get the key things seem complicated.
     #some keys are player actions,

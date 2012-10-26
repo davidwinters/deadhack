@@ -24,17 +24,22 @@ def init(player):
     #initialize playerlast
 
 
-def draw(mode,player):
+def draw(mode, player):
     """ draw the screen """
     #if player has moved from last position
-    libtcod.console_print_left(0, player.lastx, player.lasty, libtcod.BKGND_NONE, ' ')
     libtcod.console_print_left(0, player.x, player.y, libtcod.BKGND_NONE, '@')
     #save this position for next iteration
     libtcod.console_flush()
-#
+
+
+def clear(mode, player):
+    libtcod.console_print_left(0, player.x, player.y, libtcod.BKGND_NONE, ' ')
+
 # logic for knowing main window is still open
 # used in main game loop
 #
+
+
 def console():
     return libtcod.console_is_window_closed()
 
