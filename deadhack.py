@@ -6,14 +6,14 @@
 # imports
 #
 #display library for trying to encapsulate graphics
-from lib import display
+from dh.game import display
 #import libtcod - just required, has many parts
 #like keyboard processing outside of graphics
-from lib import libtcodpy as libtcod
+from dh.lib import libtcodpy as libtcod
 #made a placeholder but not used yet
 #from lib import Player
 #I needed support methods for logic and didn't know where to put them
-from lib import support
+from dh.game import support
 #
 # main method
 #
