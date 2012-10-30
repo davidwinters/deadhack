@@ -14,13 +14,13 @@ from dh.lib import libtcodpy as libtcod
 #from lib import Player
 #I needed support methods for logic and didn't know where to put them
 from dh.game import support
-from dh.game import Player
+from dh.game import Actor
 #
 # main method
 #
 
 #initialize player object
-player = Player.Player()
+player = dh.game.Actor.Actor(50,50,'@',libtcod.white)
 #init gamemode (by default mid-game)
 mode = 'map'
 #init basic display items
