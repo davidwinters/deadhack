@@ -6,7 +6,7 @@
 # imports
 #
 #display library for trying to encapsulate graphics
-from dh.game import display
+import dh.game.Display
 #import libtcod - just required, has many parts
 #like keyboard processing outside of graphics
 from dh.lib import libtcodpy as libtcod
@@ -24,13 +24,14 @@ player = Player.Player()
 #init gamemode (by default mid-game)
 mode = 'map'
 #init basic display items
-display.init(player)
+display = dh.game.Display.Display()
 #using mode as a placeholder here for game state,
 #since we by default start mid-game.
 
 
 #
 # main logic loop
+print display.console()
 #
 while not display.console():
     """ main loop """
