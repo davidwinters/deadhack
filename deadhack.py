@@ -31,9 +31,8 @@ display = dh.game.Display.Display()
 
 #
 # main logic loop
-print display.console()
 #
-while not display.console():
+while not display.display_closed():
     """ main loop """
     display.draw(mode,player) 
 

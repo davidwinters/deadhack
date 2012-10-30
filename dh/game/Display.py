@@ -4,6 +4,8 @@ import Player
 
 class Display():
 
+    con = []
+
     def __init__(self):
         '''initialize game console'''
         #set font for game
@@ -22,7 +24,7 @@ class Display():
 
 
 
-    def draw(mode, player):
+    def draw(self, mode, player):
         """ draw the screen pre-blit step 1 tut"""
         #if player has moved from last position
         libtcod.console_print_left(con, player.x, player.y, libtcod.BKGND_NONE, '@')
@@ -31,7 +33,7 @@ class Display():
         libtcod.console_flush()
 
 
-    def clear(mode, player):
+    def clear(self, mode, player):
         '''ghetto clear used in step 1 of tut pre-blit'''
         libtcod.console_print_left(con, player.x, player.y, libtcod.BKGND_NONE, ' ')
         libtcod.console_blit(con,0,0,screen_width,screen_height,0,0,0)
@@ -42,11 +44,11 @@ class Display():
     #
 
 
-    def console():
+    def display_closed(self):
         return libtcod.console_is_window_closed()
 
     #
     # push visual changes to screen 'viewport'
     #
-    def flush():
+    def flush(self):
         libtcod.console_flush()
