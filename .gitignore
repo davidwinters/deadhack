@@ -2,6 +2,8 @@
 ## Eclipse
 #################
 
+.ropeproject
+
 *.pydevproject
 .project
 .metadata
