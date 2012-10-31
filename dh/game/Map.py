@@ -1,8 +1,7 @@
 from ..lib import libtcodpy as libtcod
 
-
-class Tile(object):
-    #tiles on the map
+class Tile(object): #
+    #Represents 1 map tile
     def __init__(self, blocked, block_sight=None):
         self.blocked = blocked
         self.explored = False
@@ -87,33 +86,37 @@ class Map(object):
                 if new_room.intersect(other_room):
                     failed = True
                     break
+            #if we failed lets boot to next iteration
+            #we don't carve the room into the map
+            if failed:
+                failed = False
+                continue
 
             #if not lets carve it
-            if not failed:
-                self.make_room(new_room)
+            self.make_room(new_room)
 
-                #grabbing center coordinates for some reason
-                (new_x, new_y) = new_room.center()
+            #grabbing center coordinates for some reason
+            (new_x, new_y) = new_room.center()
 
-                if num_rooms == 0:
-                    #this must be first room, no tunnel
-                    pass
+            if num_rooms == 0:
+                #this must be first room, no tunnel
+                pass
+
+            else:
+                #this is not the first room so lets make a tunnel now
+                (prev_x, prev_y) = self.rooms[num_rooms - 1].center()
+
+                #draw a coin, if 1 go horizontal first, if 0 go vertical first
+                if libtcod.random_get_int(0, 0, 1) == 1:
+                    #go horizontal first
+                    self.make_h_tunnel(prev_x, new_x, prev_y)
+                    self.make_v_tunnel(prev_y, new_y, new_x)
 
                 else:
-                    #this is not the first room so lets make a tunnel now
-                    (prev_x, prev_y) = self.rooms[num_rooms - 1].center()
+                    #go vertical first
+                    self.make_v_tunnel(prev_y, new_y, prev_x)
+                    self.make_h_tunnel(prev_x, new_x, new_y)
 
-                    #draw a coin, if 1 go horizontal first, if 0 go vertical first
-                    if libtcod.random_get_int(0, 0, 1) == 1:
-                        #go horizontal first
-                        self.make_h_tunnel(prev_x, new_x, prev_y)
-                        self.make_v_tunnel(prev_y, new_y, new_x)
-
-                    else:
-                        #go vertical first
-                        self.make_v_tunnel(prev_y, new_y, prev_x)
-                        self.make_h_tunnel(prev_x, new_x, new_y)
-
-                #put the room in our list
-                self.rooms.append(new_room)
-                num_rooms += 1
+            #put the room in our list
+            self.rooms.append(new_room)
+            num_rooms += 1

@@ -31,8 +31,18 @@ def render_all(map, con):
 	#we are "blitting" our offscreen console oot the root console
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
-	
 
 while not display.display_closed():
-	render_all(newmap, display.con)
-	libtcod.console_flush()
+    #show the map we made above
+    render_all(newmap, display.con)
+    libtcod.console_flush()
+    #eat a key
+    key = libtcod.console_wait_for_keypress(True)
+    #if it tastes bad spit it out
+    if key.vk == libtcod.KEY_ESCAPE:
+        break
+    else:
+        #keep rockin
+        newmap = Map.Map(80, 50, 30, 10, 6)
+        newmap.make_map()
+
