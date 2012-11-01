@@ -15,7 +15,7 @@ color_light_wall = libtcod.Color(255, 255, 255) #white
 color_light_ground = libtcod.Color(192, 192, 192) #light grey
 
 newmap = Map.Map(80, 50, 30, 10, 6)
-newmap.make_map()
+newmap.make_cave()
 
 def render_all(map, con):
 
@@ -44,5 +44,5 @@ while not display.display_closed():
     else:
         #keep rockin
         newmap = Map.Map(80, 50, 30, 10, 6)
-        newmap.make_map()
+        newmap.make_cave()
 
