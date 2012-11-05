@@ -40,15 +40,44 @@ class Map(object):
         self.min_room_size = mnrs
         self.max_room_size = mxrs
         self.rooms = []
-
+        self.num_tiles = 0
         self.map = []
 
     def make_room(self, room):
         #make tiles in rectangle passable
+        area = 0
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
+                if self.map[x][y].blocked == True:
+                        area = area + 1
                 self.map[x][y].blocked = False
                 self.map[x][y].block_sight = False
+        return area
+
+    def make_room_round(self, room):
+        area = 0
+        for x in range(room.x1 + 1, room.x2):
+            for y in range(room.y1 + 1, room.y2):
+                if (x == room.x1 + 1 and y == room.y1 + 1):
+                    self.map[x][y].blocked = True
+                    self.map[x][y].block_sight = True
+
+                elif (x == room.x2 - 1 and y == room.y1 + 1):
+                    self.map[x][y].blocked = True
+                    self.map[x][y].block_sight = True
+
+                elif (x == room.x1 + 1 and y == room.y2 - 1):
+                    self.map[x][y].blocked = True
+                    self.map[x][y].block_sight = True
+                elif (x == room.x2 - 1  and y == room.y2 - 1):
+                    self.map[x][y].blocked = True
+                    self.map[x][y].block_sight = True
+                else:
+                    if self.map[x][y].blocked == True:
+                        area = area + 1
+                    self.map[x][y].blocked = False
+                    self.map[x][y].block_sight = False
+        return area
 
     def make_h_tunnel(self, x1, x2, y):
         #make horizontal tunnel
@@ -65,8 +94,8 @@ class Map(object):
     def make_noise(self):
         for x in range(self.width):
             for y in range(self.height):
-                wat = libtcod.random_get_int(0, 0, 10)
-                if wat > 9:
+                wat = libtcod.random_get_int(0, 0, 100)
+                if wat > 95:
                     self.map[x][y].blocked = True
                     self.map[x][y].block_sight = True
 
@@ -102,7 +131,7 @@ class Map(object):
                 continue
 
             #if not lets carve it
-            self.make_room(new_room)
+            self.num_tiles += self.make_room(new_room)
 
             #grabbing center coordinates for some reason
             (new_x, new_y) = new_room.center()
@@ -134,12 +163,13 @@ class Map(object):
             prev_x = 0
             prev_y = 0
             num_rooms = 0
+
             self.map = [[Tile(True)
                 for y in range(self.height)]
                     for x in range(self.width)]
             #our map algorithm
 
-            for r in range(self.max_rooms):
+            while self.num_tiles < self.max_rooms:
                 #random width and height
                 w = libtcod.random_get_int(0, self.min_room_size, self.max_room_size)
                 h = libtcod.random_get_int(0, self.min_room_size, self.max_room_size)
@@ -156,7 +186,7 @@ class Map(object):
                 new_room = Rect(x, y, w, h)
 
                 #if not lets carve it
-                self.make_room(new_room)
+                self.num_tiles += self.make_room_round(new_room)
 
                 #grabbing center coordinates for some reason
                 (new_x, new_y) = new_room.center()
@@ -184,3 +214,31 @@ class Map(object):
                 self.rooms.append(new_room)
                 num_rooms += 1
             self.make_noise()
+
+    def make_greathall(self):
+            hall_start = libtcod.random_get_int(0, 1, 4)
+            num_bends = libtcod.random_get_int(0, 2, 3)
+            start_x = 0
+            start_y = 0
+
+            self.map = [[Tile(True)
+                for y in range(self.height)]
+                    for x in range(self.width)]
+
+            if hall_start == 1:
+                start_x = 10
+                start_y = 10
+                self.make_v_tunnel(start_y, self.height - 10, start_x)
+                self.make_h_tunnel(start_x, self.width - 10, self.height - 10)
+                if num_bends == 3:
+                    self.make_v_tunnel(self.height - 10, 10, self.width - 10)
+
+            elif hall_start == 2:
+                start_x = self.width - 20
+                start_y = 20
+            elif hall_start == 3:
+                start_x = 20
+                start_y = self.height - 20
+            else:
+                start_x = self.width - 20
+                start_y = self.height - 20

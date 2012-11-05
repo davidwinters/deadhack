@@ -133,6 +133,8 @@ Desktop.ini
 ## Python
 #############
 
+deadhack/
+
 *.py[co]
 
 # Packages

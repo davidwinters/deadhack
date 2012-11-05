@@ -14,35 +14,49 @@ SCREEN_HEIGHT = 50
 color_light_wall = libtcod.Color(255, 255, 255) #white
 color_light_ground = libtcod.Color(192, 192, 192) #light grey
 
-newmap = Map.Map(80, 50, 30, 10, 6)
-newmap.make_cave()
+
 
 def render_all(map, con):
 
-	for y in range(map.height):
-		for x in range(map.width):
-			wall = map.map[x][y].block_sight
-			if wall:
-				libtcod.console_put_char_ex(con, x, y, '#', color_light_wall, libtcod.black)
-			else:
-				libtcod.console_put_char_ex(con, x, y, '.', color_light_ground, libtcod.black)
-	
-	
-	#we are "blitting" our offscreen console oot the root console
-	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+    for y in range(map.height):
+        for x in range(map.width):
+            wall = map.map[x][y].block_sight
+            if wall:
+                libtcod.console_put_char_ex(con, x, y, '#', color_light_wall, libtcod.black)
+            else:
+                libtcod.console_put_char_ex(con, x, y, '.', color_light_ground, libtcod.black)
+
+    #we are "blitting" our offscreen console oot the root console
+    libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
 
 while not display.display_closed():
     #show the map we made above
-    render_all(newmap, display.con)
-    libtcod.console_flush()
+
     #eat a key
     key = libtcod.console_wait_for_keypress(True)
+    key_char = chr(key.c)
+
     #if it tastes bad spit it out
     if key.vk == libtcod.KEY_ESCAPE:
         break
+    elif key_char == 'c':
+        newmap = Map.Map(50, 80, 1000, 10, 6)
+        newmap.make_cave()
+        print newmap.num_tiles
+
+    elif key_char == 'm':
+        newmap = Map.Map(50, 80, 1000, 10, 6)
+        newmap.make_map()
+        print newmap.num_tiles
+    elif key_char == 'h':
+        newmap = Map.Map(50, 80, 1000, 10, 6)
+        newmap.make_greathall()
+        print newmap.num_tiles
     else:
         #keep rockin
-        newmap = Map.Map(80, 50, 30, 10, 6)
-        newmap.make_cave()
+        newmap = Map.Map(50, 80, 1000, 10, 6)
+        newmap.make_map()
 
+    render_all(newmap, display.con)
+    libtcod.console_flush()
