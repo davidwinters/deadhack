@@ -5,36 +5,67 @@
 #
 # imports
 #
-#display library for trying to encapsulate graphics
-import dh.game.Display
-#import libtcod - just required, has many parts
-#like keyboard processing outside of graphics
+#libtcodpy! libtcod game library
 from dh.lib import libtcodpy as libtcod
-#made a placeholder but not used yet
-#from lib import Player
-#I needed support methods for logic and didn't know where to put them
-from dh.game import support
-from dh.game import Actor
+#main imports
+from dh.game import support, Actor, Map, Display
+#
+# fuckass defs
+#
+
+def render_all(map, con):
+
+    for y in range(map.height):
+        for x in range(map.width):
+            wall = map.map[x][y].block_sight
+            if wall:
+                libtcod.console_put_char_ex(con, x, y, '#', color_light_wall, libtcod.black)
+            else:
+                libtcod.console_put_char_ex(con, x, y, '.', color_light_ground, libtcod.black)
+
+    #we are "blitting" our offscreen console oot the root console
+    libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 #
 # main method
 #
 
-#initialize player object
-player = dh.game.Actor.Actor(50,50,'@',libtcod.white)
+
+#
+# init game state
+#
+
 #init gamemode (by default mid-game)
+#20121105 JRD I intend for this to be the main switch for
+#game logic later but we will probably change it out.
+#setting it to 'map' since so far we start mid-game
+
+#initialize player object and npc
+player = Actor.Actor(50,50,'@',libtcod.white)
+npc = Actor.Actor(45, 45, '@', libtcod.yellow)
+#put them in a cast to be painted on the canvas
+cast = [player, npc]
+#game 'mode', eg inventory, menu, map
 mode = 'map'
 #init basic display items
-display = dh.game.Display.Display()
-#using mode as a placeholder here for game state,
-#since we by default start mid-game.
+display = Display.Display()
 
-
+# duping Dave's mapdemo shiznit, need to refactor!
+#map settings
+SCREEN_WIDTH = 80
+SCREEN_HEIGHT = 50
+color_light_wall = libtcod.Color(255, 255, 255) #white
+color_light_ground = libtcod.Color(192, 192, 192) #light grey
+#craete map
+current_level = Map.Map(50, 80, 1000, 10, 6)
+current_level.make_map()
 #
 # main logic loop
 #
 while not display.display_closed():
     """ main loop """
-    display.draw(mode, player)
+
+    render_all(current_level, display.con)
+    display.draw(mode, cast)
 
     #flush state to viewport this cycle ?? not sure what it does yet!
     display.flush()
@@ -42,8 +73,11 @@ while not display.display_closed():
     #get user input for game loop
     key = libtcod.console_wait_for_keypress(True)
     #process key we're given
-    display.clear(mode, player)
+    display.clear(mode, cast)
     support.process_key(key, mode, player)
+    npc_x = libtcod.random_get_int(0, -1, 1)
+    npc_y = libtcod.random_get_int(0, -1, 1)
+    npc.move(npc_x, npc_y)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
@@ -60,3 +94,6 @@ while not display.display_closed():
         break
 
 print 'game finished!'
+
+
+

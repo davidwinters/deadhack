@@ -20,17 +20,20 @@ class Display():
         #setup offscreen console
         self.con = libtcod.console_new(self.screen_width, self.screen_height)
 
-    def draw(self, mode, player):
+    def draw(self, mode, cast):
         """ draw the screen pre-blit step 1 tut"""
         #if player has moved from last position
-        libtcod.console_print_left(self.con, player.x, player.y, libtcod.BKGND_NONE, '@')
+        for object in cast:
+            libtcod.console_set_foreground_color(self.con, object.colour)
+            libtcod.console_print_left(self.con, object.x, object.y, libtcod.BKGND_NONE, object.char)
         #save this position for next iteration
         libtcod.console_blit(self.con, 0, 0, self.screen_width, self.screen_height, 0, 0, 0)
         libtcod.console_flush()
 
-    def clear(self, mode, player):
+    def clear(self, mode, cast):
         '''ghetto clear used in step 1 of tut pre-blit'''
-        libtcod.console_print_left(self.con, player.x, player.y, libtcod.BKGND_NONE, ' ')
+        for object in cast:
+            libtcod.console_print_left(self.con, object.x, object.y, libtcod.BKGND_NONE, ' ')
         libtcod.console_blit(self.con, 0, 0, self.screen_width, self.screen_height, 0, 0, 0)
         libtcod.console_flush()
 
