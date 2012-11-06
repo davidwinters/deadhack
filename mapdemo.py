@@ -43,16 +43,13 @@ while not display.display_closed():
     elif key_char == 'c':
         newmap = Map.Map(50, 80, 1000, 10, 6)
         newmap.make_cave()
-        print newmap.num_tiles
 
     elif key_char == 'm':
         newmap = Map.Map(50, 80, 1000, 10, 6)
         newmap.make_map()
-        print newmap.num_tiles
     elif key_char == 'h':
         newmap = Map.Map(50, 80, 1000, 10, 6)
         newmap.make_greathall()
-        print newmap.num_tiles
     else:
         #keep rockin
         newmap = Map.Map(50, 80, 1000, 10, 6)

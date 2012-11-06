@@ -69,7 +69,7 @@ class Map(object):
                 elif (x == room.x1 + 1 and y == room.y2 - 1):
                     self.map[x][y].blocked = True
                     self.map[x][y].block_sight = True
-                elif (x == room.x2 - 1  and y == room.y2 - 1):
+                elif (x == room.x2 - 1 and y == room.y2 - 1):
                     self.map[x][y].blocked = True
                     self.map[x][y].block_sight = True
                 else:
@@ -90,6 +90,59 @@ class Map(object):
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.map[x][y].blocked = False
             self.map[x][y].block_sight = False
+
+    def make_h_hall(self, x1, x2, y1):
+            #make horizontal tunnel
+
+        for y in range(y1, y1 + 2):
+            for x in range(min(x1, x2), max(x1, x2) + 1):
+                delta = libtcod.random_get_int(0, -1, 1)
+
+                self.map[x][y].blocked = False
+                self.map[x][y].block_sight = False
+
+                if x > min(x1, x2) + 3 and x < max(x1, x2) - 3:
+                    if (x % 5) == 0:
+                        if delta == 1:
+                            self.map[x][y1 + 2].blocked = False
+                            self.map[x][y1 + 2].block_sight = False
+                            for xx in range(x - 1, x + 2):
+                                for yy in range(y1 + 3, y1 + 8):
+                                    self.map[xx][yy].blocked = False
+                                    self.map[xx][yy].block_sight = False
+                        if delta == -1:
+                            self.map[x][y1 - 1].blocked = False
+                            self.map[x][y1 - 1].block_sight = False
+                            for xx in range(x - 1, x + 2):
+                                for yy in range(y1 - 7, y1 - 1):
+                                    self.map[xx][yy].blocked = False
+                                    self.map[xx][yy].block_sight = False
+
+    def make_v_hall(self, y1, y2, x1):
+        #make vertical tunnel
+        for x in range(x1, x1 + 2):
+            for y in range(min(y1, y2), max(y1, y2) + 1):
+                delta = libtcod.random_get_int(0, -1, 1)
+
+                self.map[x][y].blocked = False
+                self.map[x][y].block_sight = False
+
+                if y > min(y1, y2) + 3 and y < max(y1, y2) - 3:
+                    if (y % 5) == 0:
+                        if delta == 1:
+                            self.map[x1 + 2][y].blocked = False
+                            self.map[x1 + 2][y].block_sight = False
+                            for yy in range(y - 1, y + 2):
+                                for xx in range(x1 + 3, x1 + 8):
+                                    self.map[xx][yy].blocked = False
+                                    self.map[xx][yy].block_sight = False
+                        if delta == -1:
+                            self.map[x1 - 1][y].blocked = False
+                            self.map[x1 - 1][y].block_sight = False
+                            for yy in range(y - 1, y + 2):
+                                for xx in range(x1 - 7, x1 - 1):
+                                    self.map[xx][yy].blocked = False
+                                    self.map[xx][yy].block_sight = False
 
     def make_noise(self):
         for x in range(self.width):
@@ -228,17 +281,31 @@ class Map(object):
             if hall_start == 1:
                 start_x = 10
                 start_y = 10
-                self.make_v_tunnel(start_y, self.height - 10, start_x)
-                self.make_h_tunnel(start_x, self.width - 10, self.height - 10)
+                self.make_v_hall(start_y, self.height - 10, start_x)
+
+                self.make_h_hall(start_x, self.width - 10, self.height - 10)
                 if num_bends == 3:
-                    self.make_v_tunnel(self.height - 10, 10, self.width - 10)
+                    self.make_v_hall(self.height - 10, 10, self.width - 10)
 
             elif hall_start == 2:
-                start_x = self.width - 20
-                start_y = 20
+                start_x = self.width - 10
+                start_y = 10
+                self.make_h_hall(start_x, 10, start_y)
+                self.make_v_hall(start_y, self.height - 10, start_x)
+                if num_bends == 3:
+                    self.make_h_hall(start_x, self.width - 10, self.height - 10)
+
             elif hall_start == 3:
-                start_x = 20
-                start_y = self.height - 20
+                start_x = 10
+                start_y = self.height - 10
+                self.make_h_hall(start_x, self.width - 10, start_y)
+                self.make_v_hall(start_y, 10, self.width - 10)
+                if num_bends == 3:
+                    self.make_h_hall(self.width - 10, start_x, 10)
             else:
-                start_x = self.width - 20
-                start_y = self.height - 20
+                start_x = self.width - 10
+                start_y = self.height - 10
+                self.make_v_hall(start_y, 10, start_x)
+                self.make_h_hall(start_x, 10, 10)
+                if num_bends == 3:
+                    self.make_v_hall(10, start_y, 10)
