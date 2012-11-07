@@ -1,13 +1,19 @@
+#
+#Map.py
+#
+#TODO 20121106JRD: I think you can integrate the map type with Map object creation
+#and have init make the requested map type without having two steps
+#upon map creation pretty easy, might do it later 
 from ..lib import libtcodpy as libtcod
 
 
 class Tile(object):
-    #Represents 1 map tile
+    """ Represents 1 map tile """
     def __init__(self, blocked, block_sight=None):
         self.blocked = blocked
         self.explored = False
 
-        #blocked tiles also block sight
+        #by default, if a tile is blocked, it also blocks sight
         if block_sight is None:
             block_sight = blocked
             self.block_sight = block_sight

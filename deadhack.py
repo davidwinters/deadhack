@@ -9,22 +9,9 @@
 from dh.lib import libtcodpy as libtcod
 #main imports
 from dh.game import support, Actor, Map, Display
-#
-# fuckass defs
-#
 
-def render_all(map, con):
 
-    for y in range(map.height):
-        for x in range(map.width):
-            wall = map.map[x][y].block_sight
-            if wall:
-                libtcod.console_put_char_ex(con, x, y, '#', color_light_wall, libtcod.black)
-            else:
-                libtcod.console_put_char_ex(con, x, y, '.', color_light_ground, libtcod.black)
 
-    #we are "blitting" our offscreen console oot the root console
-    libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 #
 # main method
 #
@@ -49,12 +36,6 @@ mode = 'map'
 #init basic display items
 display = Display.Display()
 
-# duping Dave's mapdemo shiznit, need to refactor!
-#map settings
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
-color_light_wall = libtcod.Color(255, 255, 255) #white
-color_light_ground = libtcod.Color(192, 192, 192) #light grey
 #craete map
 current_level = Map.Map(50, 80, 1000, 10, 6)
 current_level.make_map()
@@ -63,17 +44,24 @@ current_level.make_map()
 #
 while not display.display_closed():
     """ main loop """
-
-    render_all(current_level, display.con)
-    display.draw(mode, cast)
-
-    #flush state to viewport this cycle ?? not sure what it does yet!
+    #
+    # DISPLAY
+    #
+    display.draw_map(mode, current_level)
+    display.draw_cast(mode, cast)
+    #flush state to viewport this cycle
     display.flush()
-
+    
+    #
+    # INPUT
+    #
     #get user input for game loop
     key = libtcod.console_wait_for_keypress(True)
+
+    #
+    # LOGIC
+    #
     #process key we're given
-    display.clear(mode, cast)
     support.process_key(key, mode, player)
     npc_x = libtcod.random_get_int(0, -1, 1)
     npc_y = libtcod.random_get_int(0, -1, 1)
