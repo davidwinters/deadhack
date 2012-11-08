@@ -21,24 +21,26 @@ from dh.game import support, Actor, Map, Display
 # init game state
 #
 
-#init gamemode (by default mid-game)
-#20121105 JRD I intend for this to be the main switch for
-#game logic later but we will probably change it out.
-#setting it to 'map' since so far we start mid-game
-
-#initialize player object and npc
-player = Actor.Actor(50, 50, '@', libtcod.white)
-npc = Actor.Actor(45, 45, '@', libtcod.yellow)
-#put them in a cast to be painted on the canvas
-cast = [player, npc]
-#game 'mode', eg inventory, menu, map
-mode = 'map'
 #init basic display items
 display = Display.Display()
 
 #craete map
 current_level = Map.Map(50, 80, 1000, 10, 6)
 current_level.make_map()
+#create prototyping player and mpc
+player = Actor.Actor(0, 0, '@', libtcod.white)
+npc = Actor.Actor(0, 0, '@', libtcod.yellow)
+#put actors in a cast to possibly paint on screen or wahtever
+cast = [player, npc]
+#game 'mode', eg inventory, menu, map
+#we might change it
+mode = 'map'
+#
+# gen valid positions on map for cast
+for actor in cast:
+    while current_level.map[actor.x][actor.y].blocked:
+        actor.x = libtcod.random_get_int(0, 3, current_level.width-3)
+        actor.y = libtcod.random_get_int(0, 3, current_level.height-3)
 #
 # main logic loop
 #
@@ -51,7 +53,7 @@ while not display.display_closed():
     display.draw_cast(mode, cast)
     #flush state to viewport this cycle
     display.flush()
-    
+
     #
     # INPUT
     #
@@ -61,11 +63,12 @@ while not display.display_closed():
     #
     # LOGIC
     #
-    #process key we're given
+    #process key we're given and put into game objects
     support.process_key(key, mode, player)
-    npc_x = libtcod.random_get_int(0, -1, 1)
-    npc_y = libtcod.random_get_int(0, -1, 1)
-    npc.move(npc_x, npc_y)
+    support.move(player, current_level)
+
+    npc.push = npc.moves[libtcod.random_get_int(0, 0, 7)]
+    support.move(npc, current_level)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
@@ -82,6 +85,5 @@ while not display.display_closed():
         break
 
 print 'game finished!'
-
 
 
