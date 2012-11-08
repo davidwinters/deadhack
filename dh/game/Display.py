@@ -22,8 +22,11 @@ class Display():
 
         def draw_map(self, mode, map):
             """ draw map to back console """
+            #colours motherfuck do you has them
             color_light_wall = libtcod.Color(255, 255, 255) #white
+            color_dark_wall = libtcod.Color(0, 0, 100) 
             color_light_ground = libtcod.Color(192, 192, 192) #light grey
+            color_dark_ground = libtcod.Color(50, 50, 150) 
             for y in range(map.height):
                 for x in range(map.width):
                     wall = map.map[x][y].block_sight
@@ -31,6 +34,15 @@ class Display():
                         libtcod.console_put_char_ex(self.con, x, y, '#', color_light_wall, libtcod.black)
                     else:
                         libtcod.console_put_char_ex(self.con, x, y, '.', color_light_ground, libtcod.black)
+
+        def calcluate_fov(self, player, map):
+            """ calc fov based on player loc onto map object """
+            torch_radius = 10
+            fov_light_walls = True
+            fov_algo = 0
+            libtcod.map(map, player.x, player.y, torch_radius, fov_light_walls,
+                        fov_algo)
+
 
         def draw_cast(self, mode, cast):
             """ draw the actors on back console """

@@ -27,7 +27,7 @@ from dh.game import support, Actor, Map, Display
 #setting it to 'map' since so far we start mid-game
 
 #initialize player object and npc
-player = Actor.Actor(50,50,'@',libtcod.white)
+player = Actor.Actor(50, 50, '@', libtcod.white)
 npc = Actor.Actor(45, 45, '@', libtcod.yellow)
 #put them in a cast to be painted on the canvas
 cast = [player, npc]

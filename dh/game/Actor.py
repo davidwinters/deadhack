@@ -6,7 +6,7 @@ from ..lib import libtcodpy as libtcod
 class Actor:
     #generic game object
     def __init__(self, x, y, char, colour):
-        '''x y screen loc, char: '@', colour eg libtcod.white'''
+        """ x y screen loc, char: '@', colour eg libtcod.white """
         self.x = x
         self.y = y
         self.char = char
