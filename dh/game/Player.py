@@ -1,11 +1,15 @@
+from dh.game import Actor
+from ..lib import libtcodpy as libtcod
+
 #
 # player class
 #
-class Player(object):
-
-    x = 50
-    y = 50
 
 
-#    def __init__():
+class Player(Actor.Actor):
 
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.char = "@"
+        self.colour = libtcod.white

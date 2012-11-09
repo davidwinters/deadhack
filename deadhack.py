@@ -8,7 +8,7 @@
 #libtcodpy! libtcod game library
 from dh.lib import libtcodpy as libtcod
 #main imports
-from dh.game import support, Actor, Map, Display
+from dh.game import support, Actor, Map, Display, Monster, Player
 
 
 
@@ -28,8 +28,8 @@ display = Display.Display()
 current_level = Map.Map(50, 80, 1000, 10, 6)
 current_level.make_map()
 #create prototyping player and mpc
-player = Actor.Actor(0, 0, '@', libtcod.white)
-npc = Actor.Actor(0, 0, '@', libtcod.yellow)
+player = Player.Player()
+npc = Monster.Monster()
 #put actors in a cast to possibly paint on screen or wahtever
 cast = [player, npc]
 #game 'mode', eg inventory, menu, map
@@ -39,8 +39,8 @@ mode = 'map'
 # gen valid positions on map for cast
 for actor in cast:
     while current_level.map[actor.x][actor.y].blocked:
-        actor.x = libtcod.random_get_int(0, 3, current_level.width-3)
-        actor.y = libtcod.random_get_int(0, 3, current_level.height-3)
+        actor.x = libtcod.random_get_int(0, 3, current_level.width - 3)
+        actor.y = libtcod.random_get_int(0, 3, current_level.height - 3)
 #
 # main logic loop
 #
@@ -59,7 +59,6 @@ while not display.display_closed():
     #
     #get user input for game loop
     key = libtcod.console_wait_for_keypress(True)
-
     #
     # LOGIC
     #
@@ -67,8 +66,9 @@ while not display.display_closed():
     support.process_key(key, mode, player)
     support.move(player, current_level)
 
-    npc.push = npc.moves[libtcod.random_get_int(0, 0, 7)]
-    support.move(npc, current_level)
+    # npc.push = npc.moves[libtcod.random_get_int(0, 0, 7)]
+    # support.move(npc, current_level)
+    npc.ai.act(current_level)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
@@ -85,5 +85,3 @@ while not display.display_closed():
         break
 
 print 'game finished!'
-
-
