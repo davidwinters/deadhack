@@ -8,7 +8,7 @@
 #libtcodpy! libtcod game library
 from dh.lib import libtcodpy as libtcod
 #main imports
-from dh.game import support, Actor, Map, Display, Monster, Player
+from dh.game import support, Map, Display, Monster, Player
 
 
 
@@ -68,7 +68,7 @@ while not display.display_closed():
 
     # npc.push = npc.moves[libtcod.random_get_int(0, 0, 7)]
     # support.move(npc, current_level)
-    npc.ai.act(current_level)
+    npc.ai.act(current_level, player)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
