@@ -63,10 +63,10 @@ while not display.display_closed():
     # LOGIC
     #
     #process key we're given and put into game objects
-    support.process_key(key, mode, player)
-    support.move(player, current_level)
+    support.process_keypress(key, mode, player)
+    #let player move first
+    player.move(current_level)
 
-    # npc.push = npc.moves[libtcod.random_get_int(0, 0, 7)]
     # support.move(npc, current_level)
     npc.ai.act(current_level, player)
     #once we get the key things seem complicated.

@@ -19,37 +19,32 @@ class Monster(Actor.Actor):
 
 class AIrandom(object):
     """ moves in random direction """
-    def __init__(self):
-        self.moves = ['u', 'ur', 'r', 'dr', 'd', 'dl', 'l', 'ul']
-
     def act(self, map, player):
-        self.owner.push = self.moves[random.randint(0, 7)]
-        support.move(self.owner, map)
+        self.owner.push = self.owner.x+random.randint(-1,1),self.owner.y+random.randint(-1,1)
+        self.owner.move(map)
 
 
 class AIchase(object):
     """ moves towards player """
-
     def act(self, map, player):
+        """ """
+        #if we're more than 2sq from player calc a move towards them
+        #and execute it
         if self.owner.distance_to(player) >= 2:
-                dx, dy = self.owner.move_towards(player.x, player.y)
-                testx = self.owner.x + dx
-                testy = self.owner.y + dy
-
-                if map.map[testx][self.owner.y].blocked == False:
-                    self.owner.x += dx
-                if map.map[self.owner.x][testy].blocked == False:
-                    self.owner.y += dy
-
+            a,b = self.owner.calc_move_towards(player.x, player.y)
+            self.owner.push = self.owner.x+a, self.owner.y+b
+            self.owner.move(map)
 
 class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
-
     def act(self, map, player):
+        """ """
+        #if we're more than 2sq from player calc a move towarsd them
+        #and execute it
         if self.owner.distance_to(player) >= 2:
-                dx, dy = self.owner.move_towards(player.x, player.y)
-                self.owner.x += dx
-                self.owner.y += dy
+            a,b = self.owner.calc_move_towards(player.x, player.y)
+            self.owner.push = self.owner.x+a, self.owner.y+b
+            self.owner.phase_move()
 
 #our primary data structure for monster stats
 mob = [
