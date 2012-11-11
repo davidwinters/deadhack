@@ -32,6 +32,8 @@ player = Player.Player()
 npc = Monster.Monster()
 #put actors in a cast to possibly paint on screen or wahtever
 cast = [player, npc]
+#game messages
+messages = [("Welcome to Deadhack", libtcod.white)]
 #game 'mode', eg inventory, menu, map
 #we might change it
 mode = 'map'
@@ -51,6 +53,7 @@ while not display.display_closed():
     #
     display.draw_map(mode, current_level)
     display.draw_cast(mode, cast)
+    display.draw_gui(player, messages)
     #flush state to viewport this cycle
     display.flush()
 
@@ -68,7 +71,7 @@ while not display.display_closed():
     player.move(current_level)
 
     # support.move(npc, current_level)
-    npc.ai.act(current_level, player)
+    npc.ai.act(current_level, player, messages)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
