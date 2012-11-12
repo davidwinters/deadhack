@@ -1,6 +1,10 @@
 from ..lib import libtcodpy as libtcod
+from dh.game import support
 import textwrap
 
+#import shared message queue -
+#the list of messages to be sent to viewport
+messages = support.message_queue
 
 class Display(object):
         """ handle to methods that write to screen """
@@ -59,7 +63,7 @@ class Display(object):
             libtcod.console_blit(self.con, 0, 0, self.screen_width, self.screen_height, 0, 0, 0)
             libtcod.console_flush()
 
-        def draw_gui(self, player, messages):
+        def draw_gui(self, player):
             """ draw all of the gui elements to the console """
             messagebox = MessageBox(x=1, y=1, w=self.screen_width, h=5)
             for message, color in messages:

@@ -2,6 +2,11 @@
 # support.py
 #
 from ..lib import libtcodpy as libtcod
+from collections import deque
+
+#initialize the shared message queue-
+#list of message to be sent to viewport
+message_queue = deque([])
 
 """ take key and inject it into game objects for logic """
 def process_keypress(key, mode, player):

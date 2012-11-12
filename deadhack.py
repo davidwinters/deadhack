@@ -9,7 +9,7 @@
 from dh.lib import libtcodpy as libtcod
 #main imports
 from dh.game import support, Map, Display, Monster, Player
-
+import sys
 
 
 #
@@ -33,7 +33,13 @@ npc = Monster.Monster()
 #put actors in a cast to possibly paint on screen or wahtever
 cast = [player, npc]
 #game messages
-messages = [("Welcome to Deadhack", libtcod.white)]
+#import shared message queue
+#the list of messages to be sent to viewport
+#start off with a hello message
+messages = support.message_queue
+messages.append(("Welcome to Deadhack", libtcod.white))
+#print messages.popleft()
+#sys.exit(0)
 #game 'mode', eg inventory, menu, map
 #we might change it
 mode = 'map'
@@ -53,7 +59,7 @@ while not display.display_closed():
     #
     display.draw_map(mode, current_level)
     display.draw_cast(mode, cast)
-    display.draw_gui(player, messages)
+    display.draw_gui(player)
     #flush state to viewport this cycle
     display.flush()
 
@@ -71,7 +77,7 @@ while not display.display_closed():
     player.move(current_level)
 
     # support.move(npc, current_level)
-    npc.ai.act(current_level, player, messages)
+    npc.ai.act(current_level, player)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit

@@ -2,6 +2,10 @@ from dh.game import Actor
 from ..lib import libtcodpy as libtcod
 import random
 
+from dh.game import support
+
+messages = support.message_queue
+
 
 class Monster(Actor.Actor):
     """generic monster object"""
@@ -19,7 +23,7 @@ class Monster(Actor.Actor):
 
 class AIrandom(object):
     """ moves in random direction """
-    def act(self, map, player, messages):
+    def act(self, map, player):
         self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
         self.owner.move(map)
         if self.owner.distance_to(player) == 0:
@@ -28,7 +32,7 @@ class AIrandom(object):
 
 class AIchase(object):
     """ moves towards player """
-    def act(self, map, player, messages):
+    def act(self, map, player):
         """ """
         #if we're more than 2sq from player calc a move towards them
         #and execute it
@@ -43,7 +47,7 @@ class AIchase(object):
 
 class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
-    def act(self, map, player, messages):
+    def act(self, map, player):
         """ """
         #if we're more than 2sq from player calc a move towarsd them
         #and execute it
