@@ -8,8 +8,8 @@ from ..lib import libtcodpy as libtcod
 
 class Player(Actor.Actor):
 
-    def __init__(self):
-        self.x = 0
-        self.y = 0
+    def __init__(self, **kwargs):
+        super(Player, self).__init__(**kwargs)
         self.char = "@"
         self.colour = libtcod.white
+        self.push = ""

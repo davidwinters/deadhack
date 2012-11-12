@@ -25,7 +25,7 @@ import sys
 display = Display.Display()
 
 #craete map
-current_level = Map.Map(50, 80, 1000, 10, 6)
+current_level = Map.Map(50, 80, 7, 10, 6)
 current_level.make_map()
 #create prototyping player and mpc
 player = Player.Player()

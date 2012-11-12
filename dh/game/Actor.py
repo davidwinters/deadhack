@@ -10,12 +10,12 @@ class Actor(object):
 
     #hand int to string convert for moves/pushes
     #used it for generating a random direction
-    def __init__(self, x, y, char, colour):
+    def __init__(self):
         """ x y screen loc, char: '@', colour eg libtcod.white """
-        self.x = x
-        self.y = y
-        self.char = char
-        self.colour = colour
+        self.x = 0
+        self.y = 0
+        #self.char = char
+        #self.colour = colour
         #action queue for Actor object
         #once we execute it we need to clear it
         #and by default starts clear
@@ -40,6 +40,9 @@ class Actor(object):
 
     def move(self, map):
         """ attempt move from set push value """
+        #if we don't have a move just return
+        if not self.push:
+            return
         if not map.map[self.push[0]][self.push[1]].blocked: 
             self.x = self.push[0]
             self.y = self.push[1]
@@ -48,6 +51,8 @@ class Actor(object):
 
     def phase_move(self):
         """ move Actor without checking if map tile is blocked """
+        if not self.push:
+            return
         self.x,self.y = self.push
         #clear push state since we executed it 
         self.push = ""
