@@ -57,8 +57,9 @@ while not display.display_closed():
     #
     # DISPLAY
     #
-    display.draw_map(mode, current_level)
-    display.draw_cast(mode, cast)
+    fov_map = display.calculate_fov(player, current_level)
+    display.draw_map(mode, current_level, fov_map)
+    display.draw_cast(mode, cast, fov_map)
     display.draw_gui(player)
     #flush state to viewport this cycle
     display.flush()
@@ -71,6 +72,9 @@ while not display.display_closed():
     #
     # LOGIC
     #
+    #if esc - break out of game
+    if key.vk == libtcod.KEY_ESCAPE:
+        break
     #process key we're given and put into game objects
     support.process_keypress(key, mode, player)
     #let player move first
@@ -89,8 +93,5 @@ while not display.display_closed():
     #things like timers, status effects, player updates, watever
     #update(key)
 
-    #break out of game - should this be moved elsewhere?
-    if key.vk == libtcod.KEY_ESCAPE:
-        break
 
-print 'game finished!'
+print "game finished!"
