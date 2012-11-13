@@ -10,10 +10,10 @@ class Actor(object):
 
     #hand int to string convert for moves/pushes
     #used it for generating a random direction
-    def __init__(self):
+    def __init__(self, x, y):
         """ x y screen loc, char: '@', colour eg libtcod.white """
-        self.x = 0
-        self.y = 0
+        self.x = x
+        self.y = y
         #self.char = char
         #self.colour = colour
         #action queue for Actor object

@@ -8,7 +8,7 @@
 #libtcodpy! libtcod game library
 from dh.lib import libtcodpy as libtcod
 #main imports
-from dh.game import support, Map, Display, Monster, Player
+from dh.game import support, Map, Display, Monster, Player, Level
 import sys
 
 
@@ -24,14 +24,24 @@ import sys
 #init basic display items
 display = Display.Display()
 
-#craete map
-current_level = Map.Map(50, 80, 7, 10, 6)
-current_level.make_map()
-#create prototyping player and mpc
-player = Player.Player()
-npc = Monster.Monster()
-#put actors in a cast to possibly paint on screen or wahtever
-cast = [player, npc]
+####### jon's old shit below
+# current_level = Map.Map(50, 80, 7, 10, 6)
+# current_level.make_map()
+# #create prototyping player and mpc
+# player = Player.Player()
+# npc = Monster.Monster()
+# #put actors in a cast to possibly paint on screen or wahtever
+# cast = [player, npc]
+####### end of jon's old shit
+
+# my new shit machine, WORK IN PROGRESS
+current_level = Level.Level(10)
+player = Player.Player(x=0, y=0)
+cast = [player]
+
+for mob in current_level.mobs:
+    cast.append(mob)
+
 #game messages
 #import shared message queue
 #the list of messages to be sent to viewport
@@ -45,10 +55,9 @@ messages.append(("Welcome to Deadhack", libtcod.white))
 mode = 'map'
 #
 # gen valid positions on map for cast
-for actor in cast:
-    while current_level.map[actor.x][actor.y].blocked:
-        actor.x = libtcod.random_get_int(0, 3, current_level.width - 3)
-        actor.y = libtcod.random_get_int(0, 3, current_level.height - 3)
+while current_level.map.map[player.x][player.y].blocked:
+    player.x = libtcod.random_get_int(0, 3, current_level.map.width - 3)
+    player.y = libtcod.random_get_int(0, 3, current_level.map.height - 3)
 #
 # main logic loop
 #
@@ -57,8 +66,8 @@ while not display.display_closed():
     #
     # DISPLAY
     #
-    fov_map = display.calculate_fov(player, current_level)
-    display.draw_map(mode, current_level, fov_map)
+    fov_map = display.calculate_fov(player, current_level.map)
+    display.draw_map(mode, current_level.map, fov_map)
     display.draw_cast(mode, cast, fov_map)
     display.draw_gui(player)
     #flush state to viewport this cycle
@@ -78,10 +87,12 @@ while not display.display_closed():
     #process key we're given and put into game objects
     support.process_keypress(key, mode, player)
     #let player move first
-    player.move(current_level)
+    player.move(current_level.map)
 
     # support.move(npc, current_level)
-    npc.ai.act(current_level, player)
+    for mob in cast:
+        if isinstance(mob, Monster.Monster):
+            mob.ai.act(current_level.map, player)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
