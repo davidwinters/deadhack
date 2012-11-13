@@ -15,7 +15,7 @@ class Monster(Actor.Actor):
         if monster == -1:
             self.seed = random.randint(0, len(mob) - 1)
             self.char = mob[self.seed][1]
-            self.ai = mob[self.seed][2]
+            self.ai = mob[self.seed][2]()
         else:
             #search for requested mob in list
             found = 0
@@ -77,7 +77,7 @@ class AIxorn(object):
 
 #our primary data structure for monster stats
 mob = [
-["Skeleton", "s", AIrandom()],
-["Dragon", "D", AIxorn()],
-["Jon", "3", AIchase()]
+["Skeleton", "s", AIrandom],
+["Dragon", "D", AIxorn],
+["Jon", "3", AIchase]
 ]
