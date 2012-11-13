@@ -24,7 +24,7 @@ class Monster(Actor.Actor):
                     found = 1
                     self.seed = index
                     self.char = item[1]
-                    self.ai = item[2]
+                    self.ai = item[2]()
             if found == 0:
                 raise NameError("mob requested not found")
 
