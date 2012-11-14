@@ -12,7 +12,7 @@ class Level(object):
 
     def generate_map(self):
         """right now just spits out a map, eventually will take level parameter to spit out a type"""
-        map = Map.Map(50, 80, 7, 10, 6)
+        map = Map.Map(50, 80, 1000, 10, 6)
         map.make_map()
         return map
 

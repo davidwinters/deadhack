@@ -89,7 +89,7 @@ class Display(object):
         def draw_gui(self, player):
             """ draw all of the gui elements to the console """
             #create text notification area at top
-            infobar = MessageBox(x=1, y=1, w=self.screen_width, h=5)
+            infobar = MessageBox(x=1, y=50, w=30, h=5)
             for message, color in messages:
                 #beautify queued messages
                 infobar.append(message, color)
@@ -118,7 +118,7 @@ class MessageBox(GUIelement):
         new_msg_lines = textwrap.wrap(message, self.w)
 
         for line in new_msg_lines:
-            #clear buffer
+            #if our display area is full remove the oldest messages
             if len(self.formatted_messages) == self.h:
                 del self.formatted_messages[0]
 
@@ -127,8 +127,9 @@ class MessageBox(GUIelement):
 
     def display(self, window):
         """ display this messagebox """
-        y = 1
+        y = self.y 
         for (line, color) in self.formatted_messages:
+            line = line.ljust(self.w, ' ')
             libtcod.console_set_foreground_color(window, color)
             libtcod.console_print_left(window, self.x, y, libtcod.black, line)
             y += 1
