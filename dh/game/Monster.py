@@ -1,4 +1,4 @@
-from dh.game import Actor
+from dh.game import Actor, Player
 from ..lib import libtcodpy as libtcod
 import random
 
@@ -37,8 +37,18 @@ class Monster(Actor.Actor):
 
 class AIrandom(object):
     """ moves in random direction """
-    def act(self, map, player):
+    def act(self, map, cast):
+        #pull out player object from cast
+        for item in cast:
+            if isinstance(item, Player.Player):
+                player = item
+        #remove player object from cast
+        monstercast = [x for x in cast if not isinstance(x, Player.Player)]
+
+        #AI: select a random direction to push to
         self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
+        if map.is_blocked(self.owner.push,cast):
+            print "omg blocked!"
         self.owner.move(map)
         if self.owner.distance_to(player) == 0:
             messages.append(("WOOF", libtcod.white))
@@ -46,8 +56,14 @@ class AIrandom(object):
 
 class AIchase(object):
     """ moves towards player """
-    def act(self, map, player):
+    def act(self, map, cast):
         """ """
+        #pull out player object from cast
+        for item in cast:
+            if isinstance(item, Player.Player):
+                player = item
+        #remove player object from cast
+        monstercast = [x for x in cast if not isinstance(x, Player.Player)]
         #if we're more than 2sq from player calc a move towards them
         #and execute it
         if self.owner.distance_to(player) >= 2:
@@ -61,8 +77,14 @@ class AIchase(object):
 
 class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
-    def act(self, map, player):
+    def act(self, map, cast):
         """ """
+        #pull out player object from cast
+        for item in cast:
+            if isinstance(item, Player.Player):
+                player = item
+        #remove player object from cast
+        monstercast = [x for x in cast if not isinstance(x, Player.Player)]
         #if we're more than 2sq from player calc a move towarsd them
         #and execute it
         if self.owner.distance_to(player) >= 2:
@@ -78,6 +100,6 @@ class AIxorn(object):
 #our primary data structure for monster stats
 mob = [
 ["Skeleton", "s", AIrandom],
-["Dragon", "D", AIxorn],
+["Dragon", "D", AIchase],
 ["Jon", "3", AIchase]
 ]

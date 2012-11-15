@@ -49,6 +49,18 @@ class Map(object):
         self.num_tiles = 0
         self.map = []
 
+    def is_blocked(x,y,cast):
+        """ check to see if a given tile on map is blocked by map or castmember
+        """
+        #no idea why this next line is giving an error
+        if self.map[x][y].blocked:
+            return True
+
+        for i in cast:
+            if object.blocks and object.x == x and object.y == y:
+                return True
+        return False
+
     def make_room(self, room):
         #make tiles in rectangle passable
         area = 0

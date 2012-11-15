@@ -49,7 +49,6 @@ for mob in current_level.mobs:
 messages = support.message_queue
 messages.append(("Welcome to Deadhack", libtcod.white))
 #print messages.popleft()
-#sys.exit(0)
 #game 'mode', eg inventory, menu, map
 #we might change it
 mode = 'map'
@@ -92,7 +91,7 @@ while not display.display_closed():
     # support.move(npc, current_level)
     for mob in cast:
         if isinstance(mob, Monster.Monster):
-            mob.ai.act(current_level.map, player)
+            mob.ai.act(current_level.map, cast)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
