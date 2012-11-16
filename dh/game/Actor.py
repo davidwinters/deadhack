@@ -20,6 +20,7 @@ class Actor(object):
         #once we execute it we need to clear it
         #and by default starts clear
         self.push = ""
+        self.blocks = True
 
     def distance_to(self, other):
         #return the distance to another object

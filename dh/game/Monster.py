@@ -47,7 +47,8 @@ class AIrandom(object):
 
         #AI: select a random direction to push to
         self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
-        if map.is_blocked(self.owner.push,cast):
+        xx, yy = self.owner.push
+        if map.is_blocked(xx, yy, cast):
             print "omg blocked!"
         self.owner.move(map)
         if self.owner.distance_to(player) == 0:

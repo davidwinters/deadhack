@@ -49,7 +49,7 @@ class Map(object):
         self.num_tiles = 0
         self.map = []
 
-    def is_blocked(x,y,cast):
+    def is_blocked(self, x, y, cast):
         """ check to see if a given tile on map is blocked by map or castmember
         """
         #no idea why this next line is giving an error
@@ -57,7 +57,7 @@ class Map(object):
             return True
 
         for i in cast:
-            if object.blocks and object.x == x and object.y == y:
+            if i.blocks and i.x == x and i.y == y:
                 return True
         return False
 
