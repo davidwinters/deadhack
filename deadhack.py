@@ -53,10 +53,9 @@ messages.append(("Welcome to Deadhack", libtcod.white))
 #we might change it
 mode = 'map'
 #
-# gen valid positions on map for cast
-while current_level.map.map[player.x][player.y].blocked:
-    player.x = libtcod.random_get_int(0, 3, current_level.map.width - 3)
-    player.y = libtcod.random_get_int(0, 3, current_level.map.height - 3)
+# put player on the stairs
+player.x = current_level.doodads[0].x
+player.y = current_level.doodads[0].y
 #
 # main logic loop
 #
@@ -67,6 +66,7 @@ while not display.display_closed():
     #
     fov_map = display.calculate_fov(player, current_level.map)
     display.draw_map(mode, current_level.map, fov_map)
+    display.draw_doodads(current_level.doodads, current_level.map)
     display.draw_cast(mode, cast, fov_map)
     display.draw_gui(player)
     #flush state to viewport this cycle

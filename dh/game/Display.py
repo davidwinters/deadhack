@@ -77,6 +77,12 @@ class Display(object):
                     libtcod.console_set_foreground_color(self.con, object.colour)
                     libtcod.console_print_left(self.con, object.x, object.y, libtcod.BKGND_NONE, object.char)
 
+        def draw_doodads(self, doodads, map):
+            for doodad in doodads:
+                if map.map[doodad.x][doodad.y].explored == True:
+                    libtcod.console_set_foreground_color(self.con, libtcod.white)
+                    libtcod.console_print_left(self.con, doodad.x, doodad.y, libtcod.BKGND_NONE, doodad.char)
+
         def display_closed(self):
             """ boolean is window closed (are we bailing?) """
             return libtcod.console_is_window_closed()
