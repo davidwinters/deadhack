@@ -37,14 +37,8 @@ class Monster(Actor.Actor):
 
 class AIrandom(object):
     """ moves in random direction """
-    def act(self, map, cast):
-        #pull out player object from cast
-        for item in cast:
-            if isinstance(item, Player.Player):
-                player = item
-        #remove player object from cast
-        monstercast = [x for x in cast if not isinstance(x, Player.Player)]
-
+    def act(self, map, cast, player):
+        
         #AI: select a random direction to push to
         self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
         xx, yy = self.owner.push
@@ -57,14 +51,9 @@ class AIrandom(object):
 
 class AIchase(object):
     """ moves towards player """
-    def act(self, map, cast):
+    def act(self, map, cast, player):
         """ """
-        #pull out player object from cast
-        for item in cast:
-            if isinstance(item, Player.Player):
-                player = item
-        #remove player object from cast
-        monstercast = [x for x in cast if not isinstance(x, Player.Player)]
+        
         #if we're more than 2sq from player calc a move towards them
         #and execute it
         if self.owner.distance_to(player) >= 2:
@@ -78,14 +67,9 @@ class AIchase(object):
 
 class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
-    def act(self, map, cast):
+    def act(self, map, cast, player):
         """ """
-        #pull out player object from cast
-        for item in cast:
-            if isinstance(item, Player.Player):
-                player = item
-        #remove player object from cast
-        monstercast = [x for x in cast if not isinstance(x, Player.Player)]
+        
         #if we're more than 2sq from player calc a move towarsd them
         #and execute it
         if self.owner.distance_to(player) >= 2:

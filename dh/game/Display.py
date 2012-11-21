@@ -27,6 +27,7 @@ class Display(object):
 
         def draw_map(self, mode, map, fov_map):
             """ draw map to back console """
+            libtcod.console_clear(self.con)
             #colours motherfuck do you has them
             color_light_wall = libtcod.Color(255, 255, 255)  # white
             color_dark_wall = libtcod.Color(0, 0, 100)
@@ -44,6 +45,7 @@ class Display(object):
                             else:
                                 libtcod.console_put_char_ex(self.con, x, y, '.',
                                                         color_dark_ground, libtcod.black)
+
                     else:
                         if wall:
                             libtcod.console_put_char_ex(self.con, x, y, '#',
@@ -70,8 +72,10 @@ class Display(object):
                                     fov_light_walls, fov_algo)
             return fov_map
 
-        def draw_cast(self, mode, cast, fov_map):
+        def draw_cast(self, mode, cast, player, fov_map):
             """ draw the actors on back console """
+            libtcod.console_set_foreground_color(self.con, player.colour)
+            libtcod.console_print_left(self.con, player.x, player.y, libtcod.BKGND_NONE, player.char)
             for object in cast:
                 if libtcod.map_is_in_fov(fov_map, object.x, object.y):
                     libtcod.console_set_foreground_color(self.con, object.colour)
@@ -92,15 +96,17 @@ class Display(object):
             libtcod.console_blit(self.con, 0, 0, self.screen_width, self.screen_height, 0, 0, 0)
             libtcod.console_flush()
 
-        def draw_gui(self, player):
+        def draw_gui(self, player, level_counter):
             """ draw all of the gui elements to the console """
             #create text notification area at top
             infobar = MessageBox(x=1, y=50, w=30, h=5)
+            levelbox = LevelBox(x=40, y=50, w=30, h=5, level_counter=level_counter)
             for message, color in messages:
                 #beautify queued messages
                 infobar.append(message, color)
             #display beautified queued messages
             infobar.display(window=self.con)
+            levelbox.display(window=self.con)
 
 
 class GUIelement(object):
@@ -139,3 +145,23 @@ class MessageBox(GUIelement):
             libtcod.console_set_foreground_color(window, color)
             libtcod.console_print_left(window, self.x, y, libtcod.black, line)
             y += 1
+
+
+class LevelBox(GUIelement):
+    """ generic container for displaying current level """
+    def __init__(self, level_counter, **kwargs):
+        self.level_counter = level_counter
+        super(LevelBox, self).__init__(**kwargs)  # this super/kwargs shit is so we can use the variables defined in the parent class
+        self.formatted_messages = []
+
+    def display(self, window):
+        line = "Level " + str(self.level_counter)
+        delete = "Level 00000000000"
+
+        # clear the screen first
+        libtcod.console_set_foreground_color(window, libtcod.black)
+        libtcod.console_print_left(window, self.x, self.y, libtcod.black, delete)
+
+        #display our current level
+        libtcod.console_set_foreground_color(window, libtcod.white)
+        libtcod.console_print_left(window, self.x, self.y, libtcod.black, line)

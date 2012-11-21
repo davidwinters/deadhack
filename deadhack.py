@@ -9,7 +9,7 @@
 from dh.lib import libtcodpy as libtcod
 #main imports
 from dh.game import support, Map, Display, Monster, Player, Level
-import sys
+import math
 
 
 #
@@ -35,12 +35,12 @@ display = Display.Display()
 ####### end of jon's old shit
 
 # my new shit machine, WORK IN PROGRESS
-current_level = Level.Level(10)
-player = Player.Player(x=0, y=0)
-cast = [player]
+level_counter = 0
+levels = []
+levels.append(Level.Level(10))
 
-for mob in current_level.mobs:
-    cast.append(mob)
+player = Player.Player(x=0, y=0)
+
 
 #game messages
 #import shared message queue
@@ -54,8 +54,8 @@ messages.append(("Welcome to Deadhack", libtcod.white))
 mode = 'map'
 #
 # put player on the stairs
-player.x = current_level.doodads[0].x
-player.y = current_level.doodads[0].y
+player.x = levels[level_counter].doodads[0].x
+player.y = levels[level_counter].doodads[0].y
 #
 # main logic loop
 #
@@ -64,11 +64,11 @@ while not display.display_closed():
     #
     # DISPLAY
     #
-    fov_map = display.calculate_fov(player, current_level.map)
-    display.draw_map(mode, current_level.map, fov_map)
-    display.draw_doodads(current_level.doodads, current_level.map)
-    display.draw_cast(mode, cast, fov_map)
-    display.draw_gui(player)
+    fov_map = display.calculate_fov(player, levels[level_counter].map)
+    display.draw_map(mode, levels[level_counter].map, fov_map)
+    display.draw_doodads(levels[level_counter].doodads, levels[level_counter].map)
+    display.draw_cast(mode, levels[level_counter].mobs, player, fov_map)
+    display.draw_gui(player, level_counter)
     #flush state to viewport this cycle
     display.flush()
 
@@ -77,21 +77,31 @@ while not display.display_closed():
     #
     #get user input for game loop
     key = libtcod.console_wait_for_keypress(True)
+    key_char = chr(key.c)
     #
     # LOGIC
     #
     #if esc - break out of game
     if key.vk == libtcod.KEY_ESCAPE:
         break
+    elif key_char == ">":
+        print "down"
+        level_counter += -1
+        if len(levels) < math.fabs(level_counter) + 1:
+            levels.append(Level.Level(10))
+    elif key_char == "<":
+        print "up"
+        level_counter += 1
+
     #process key we're given and put into game objects
     support.process_keypress(key, mode, player)
     #let player move first
-    player.move(current_level.map)
+    player.move(levels[level_counter].map)
 
     # support.move(npc, current_level)
-    for mob in cast:
+    for mob in levels[level_counter].mobs:
         if isinstance(mob, Monster.Monster):
-            mob.ai.act(current_level.map, cast)
+            mob.ai.act(levels[level_counter].map, levels[level_counter].mobs, player)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit
