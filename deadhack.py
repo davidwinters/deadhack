@@ -86,12 +86,17 @@ while not display.display_closed():
         break
     elif key_char == ">":
         print "down"
-        level_counter += -1
-        if len(levels) < math.fabs(level_counter) + 1:
+        level_counter += 1
+        if len(levels) == level_counter + 1:
+            pass
+        else:
             levels.append(Level.Level(10))
     elif key_char == "<":
         print "up"
-        level_counter += 1
+        if level_counter > 0:
+            level_counter += -1
+        else:
+            print "no levels above"
 
     #process key we're given and put into game objects
     support.process_keypress(key, mode, player)
