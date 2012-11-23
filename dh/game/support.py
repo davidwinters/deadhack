@@ -3,6 +3,7 @@
 #
 from ..lib import libtcodpy as libtcod
 from collections import deque
+import math
 
 #initialize the shared message queue-
 #list of message to be sent to viewport
@@ -28,7 +29,6 @@ def process_keypress(key, mode, player):
             player.push = (player.x-1,player.y)
         elif chr(key.c) == "y":
             player.push = (player.x-1,player.y-1)
-
 
 
 

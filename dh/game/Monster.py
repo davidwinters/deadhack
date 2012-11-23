@@ -37,11 +37,7 @@ class Monster(Actor.Actor):
 class AIrandom(object):
     """ moves in random direction """
     def act(self, map, cast, player):
-        """ """
-        #don't move if we can't 'hear' him
-        if self.owner.distance_to(player) > 15:
-            return
-
+        
         #AI: select a random direction to push to
         self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
         xx, yy = self.owner.push
@@ -56,10 +52,7 @@ class AIchase(object):
     """ moves towards player """
     def act(self, map, cast, player):
         """ """
-        #don't move if we can't 'hear' him
-        if self.owner.distance_to(player) > 15:
-            return
-
+        
         #if we're more than 2sq from player calc a move towards them
         #and execute it
         if self.owner.distance_to(player) >= 2:
@@ -75,10 +68,7 @@ class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
     def act(self, map, cast, player):
         """ """
-        #don't move if we can't 'hear' him
-        if self.owner.distance_to(player) > 15:
-            return
-
+        
         #if we're more than 2sq from player calc a move towarsd them
         #and execute it
         if self.owner.distance_to(player) >= 2:
