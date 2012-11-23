@@ -42,8 +42,10 @@ class Actor(object):
         dy = int(round(dy / distance))
         return(dx, dy)
 
-    def move(self, map, cast):
+    def move(self, level):
         """ attempt move from set push value """
+        cast = level.mobs
+        map = level.map
         #if we don't have a move just return
         if not self.push:
             return

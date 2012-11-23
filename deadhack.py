@@ -96,12 +96,12 @@ while not display.display_closed():
     #process key we're given and put into game objects
     support.process_keypress(key, mode, player)
     #let player move first
-    player.move(levels[level_counter].map)
+    player.move(levels[level_counter])
 
     # support.move(npc, current_level)
     for mob in levels[level_counter].mobs:
         if isinstance(mob, Monster.Monster):
-            mob.ai.act(levels[level_counter].map, levels[level_counter].mobs, player)
+            mob.ai.act(levels[level_counter], player)
     #once we get the key things seem complicated.
     #some keys are player actions,
     #others are meta-game commands like option or quit

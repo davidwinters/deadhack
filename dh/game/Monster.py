@@ -36,29 +36,33 @@ class Monster(Actor.Actor):
 
 class AIrandom(object):
     """ moves in random direction """
-    def act(self, map, cast, player):
-        
+    def act(self, level, player):
+        """ """
+        map = level.map
+        cast = level.mobs
         #AI: select a random direction to push to
         self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
         xx, yy = self.owner.push
         if map.is_blocked(xx, yy, cast):
-            print "omg blocked!"
-        self.owner.move(map, cast)
+            self.owner.push = ""
+            return
+        self.owner.move(level)
         if self.owner.distance_to(player) == 0:
             messages.append(("WOOF", libtcod.white))
 
 
 class AIchase(object):
     """ moves towards player """
-    def act(self, map, cast, player):
+    def act(self, level, player):
         """ """
-        
+        map = level.map
+        cast = level.mobs
         #if we're more than 2sq from player calc a move towards them
         #and execute it
         if self.owner.distance_to(player) >= 2:
             a, b = self.owner.calc_move_towards(player.x, player.y)
             self.owner.push = self.owner.x + a, self.owner.y + b
-            self.owner.move(map, cast)
+            self.owner.move(level)
 
         if self.owner.distance_to(player) == 0:
             messages.append(("GOTCHA", libtcod.white))
@@ -66,15 +70,16 @@ class AIchase(object):
 
 class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
-    def act(self, map, cast, player):
+    def act(self, level, player):
         """ """
-        
+        map = level.map
+        cast = level.mobs
         #if we're more than 2sq from player calc a move towarsd them
         #and execute it
         if self.owner.distance_to(player) >= 2:
             a, b = self.owner.calc_move_towards(player.x, player.y)
             self.owner.push = self.owner.x + a, self.owner.y + b
-            self.owner.phase_move(cast)
+            self.owner.phase_move(level)
 
         if self.owner.distance_to(player) == 0:
             messages.append(("RAWR!", libtcod.white))
