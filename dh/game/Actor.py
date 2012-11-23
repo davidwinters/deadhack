@@ -3,7 +3,10 @@
 
 #from ..lib import libtcodpy as libtcod
 import math
+from dh.lib import libtcodpy as libtcod
+from dh.game import support
 
+messages = support.message_queue
 
 class Actor(object):
     #generic game object
@@ -39,21 +42,33 @@ class Actor(object):
         dy = int(round(dy / distance))
         return(dx, dy)
 
-    def move(self, map):
+    def move(self, map, cast):
         """ attempt move from set push value """
         #if we don't have a move just return
         if not self.push:
             return
+        #if map doesn't block
         if not map.map[self.push[0]][self.push[1]].blocked: 
+            #and no castmembers block
+            for i in cast:
+                if i.x == self.push[0] and i.y == self.push[1]:
+                    messages.append(("bump!",libtcod.white))
+                    self.push=""
+                    return
             self.x = self.push[0]
             self.y = self.push[1]
             #clear push state since we executed it
             self.push = ""
 
-    def phase_move(self):
+    def phase_move(self, cast):
         """ move Actor without checking if map tile is blocked """
         if not self.push:
             return
+        #if we try to move into another monster we just wait
+        for i in cast:
+            if cast.x == self.push[0] and cast.y == self.push[1]:
+                self.push=""
+                return
         self.x,self.y = self.push
         #clear push state since we executed it 
         self.push = ""

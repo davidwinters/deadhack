@@ -13,3 +13,10 @@ class Player(Actor.Actor):
         self.char = "@"
         self.colour = libtcod.white
         self.push = ""
+        
+        #stats
+        self.maxhp = 10
+        self.hp = 10
+        self.hitpct = .8
+        self.dodgepct = .5
+        self.damage = 2
