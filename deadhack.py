@@ -8,8 +8,8 @@
 #libtcodpy! libtcod game library
 from dh.lib import libtcodpy as libtcod
 #main imports
-from dh.game import support, Map, Display, Monster, Player, Level
-import math
+from dh.game import support, Display, Monster, Player, Level
+#import math
 
 
 #
@@ -23,16 +23,6 @@ import math
 
 #init basic display items
 display = Display.Display()
-
-####### jon's old shit below
-# current_level = Map.Map(50, 80, 7, 10, 6)
-# current_level.make_map()
-# #create prototyping player and mpc
-# player = Player.Player()
-# npc = Monster.Monster()
-# #put actors in a cast to possibly paint on screen or wahtever
-# cast = [player, npc]
-####### end of jon's old shit
 
 # my new shit machine, WORK IN PROGRESS
 level_counter = 0
@@ -48,7 +38,7 @@ player = Player.Player(x=0, y=0)
 #start off with a hello message
 messages = support.message_queue
 messages.append(("Welcome to Deadhack", libtcod.white))
-#print messages.popleft()
+
 #game 'mode', eg inventory, menu, map
 #we might change it
 mode = 'map'
@@ -76,8 +66,16 @@ while not display.display_closed():
     # INPUT
     #
     #get user input for game loop
-    key = libtcod.console_wait_for_keypress(True)
-    key_char = chr(key.c)
+    while(True):
+        key = libtcod.console_wait_for_keypress(True)
+        if key.vk == libtcod.KEY_SHIFT:
+            print 'shift!'
+        else:
+            break
+
+    #process key we're given and put into game objects
+    key_char = chr(key.vk)
+    support.process_keypress(key, mode, player)
     #
     # LOGIC
     #
@@ -98,8 +96,7 @@ while not display.display_closed():
         else:
             print "no levels above"
 
-    #process key we're given and put into game objects
-    support.process_keypress(key, mode, player)
+
     #let player move first
     player.move(levels[level_counter])
 
