@@ -3,14 +3,14 @@
 #
 from ..lib import libtcodpy as libtcod
 from collections import deque
-import math
+import Level
 
 #initialize the shared message queue-
 #list of message to be sent to viewport
 message_queue = deque([])
 
 """ take key and inject it into game objects for logic """
-def process_keypress(key, mode, player):
+def process_keypress(key, mode, player, levels, level_counter):
     """ take key and inject it into game objects for logic """
     if mode == 'map':
         if (key.vk == libtcod.KEY_UP or chr(key.c) == 'k'):
@@ -29,6 +29,16 @@ def process_keypress(key, mode, player):
             player.push = (player.x-1,player.y)
         elif chr(key.c) == "y":
             player.push = (player.x-1,player.y-1)
-
-
-
+        elif chr(key.c) == ">":
+            print "down"
+            level_counter += 1
+            if len(levels) == level_counter + 1:
+                pass
+            else:
+                levels.append(Level.Level(10))
+        elif chr(key.c) == "<":
+            print "up"
+            if level_counter > 0:
+                level_counter += -1
+            else:
+                print "no levels above"

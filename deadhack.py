@@ -72,30 +72,28 @@ while not display.display_closed():
             print 'shift!'
         else:
             break
-
     #process key we're given and put into game objects
     key_char = chr(key.vk)
-    support.process_keypress(key, mode, player)
+    support.process_keypress(key, mode, player, levels, level_counter)
     #
     # LOGIC
     #
     #if esc - break out of game
     if key.vk == libtcod.KEY_ESCAPE:
         break
-    elif key_char == ">":
-        print "down"
-        level_counter += 1
-        if len(levels) == level_counter + 1:
-            pass
-        else:
-            levels.append(Level.Level(10))
-    elif key_char == "<":
-        print "up"
-        if level_counter > 0:
-            level_counter += -1
-        else:
-            print "no levels above"
-
+    # elif key_char == ">":
+    #     print "down"
+    #     level_counter += 1
+    #     if len(levels) == level_counter + 1:
+    #         pass
+    #     else:
+    #         levels.append(Level.Level(10))
+    # elif key_char == "<":
+    #     print "up"
+    #     if level_counter > 0:
+    #         level_counter += -1
+    #     else:
+    #         print "no levels above"
 
     #let player move first
     player.move(levels[level_counter])
