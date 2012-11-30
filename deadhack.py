@@ -74,7 +74,7 @@ while not display.display_closed():
             break
     #process key we're given and put into game objects
     key_char = chr(key.vk)
-    support.process_keypress(key, mode, player, level_counter)
+    levelcheck = support.process_keypress(key, mode, player, level_counter, levels)
     #
     # LOGIC
     #
@@ -82,13 +82,17 @@ while not display.display_closed():
     if key.vk == libtcod.KEY_ESCAPE:
         break
 
-    if len(levels) == level_counter + 1:
-        print "what does it mean"
-    else:
-        levels.append(Level.Level(10))
-        pass
-    print len(levels)
-    print level_counter
+    #see if we need to change the level
+    if levelcheck >= 0:  # this part in particular feels REALLY ghetto
+        level_counter = levelcheck
+        if len(levels) == level_counter + 1:
+            pass  # a level already exists so don't need to append a new one
+
+        else:
+            levels.append(Level.Level(10))
+            player.x = levels[level_counter].doodads[0].x  # move our dude to the correct stairs
+            player.y = levels[level_counter].doodads[0].y
+
 
     #let player move first
     player.move(levels[level_counter])
