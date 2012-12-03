@@ -16,6 +16,7 @@ display = Display.Display()
 while not display.display_closed():
     display.flush()
     #eat a key
+    mouse = libtcod.Mouse()
     key = libtcod.console_wait_for_keypress(True)
     key_char = chr(key.c)
 
@@ -36,6 +37,10 @@ while not display.display_closed():
         #keep rockin
         newmap = Map.Map(50, 80, 1000, 10, 6)
         newmap.make_map()
+    if mouse.lbutton_pressed:
+        newmap[mouse.cx][mouse.cy].blocked = False
+        newmap[mouse.cx][mouse.cy] = False
 
-    display.draw_map("map", newmap)
+
+    display.draw_map("map", newmap, fov_map = False)
     display.flush()

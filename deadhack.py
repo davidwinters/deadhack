@@ -27,7 +27,7 @@ display = Display.Display()
 # my new shit machine, WORK IN PROGRESS
 level_counter = 0
 levels = []
-levels.append(Level.Level(10))
+levels.append(Level.Level(level_counter))
 
 player = Player.Player(x=0, y=0)
 
@@ -89,7 +89,7 @@ while not display.display_closed():
             pass  # a level already exists so don't need to append a new one
 
         else:
-            levels.append(Level.Level(10))
+            levels.append(Level.Level(level_counter))
             player.x = levels[level_counter].doodads[0].x  # move our dude to the correct stairs
             player.y = levels[level_counter].doodads[0].y
 

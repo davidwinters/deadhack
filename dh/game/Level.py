@@ -14,7 +14,16 @@ class Level(object):
     def generate_map(self):
         """right now just spits out a map, eventually will take level parameter to spit out a type"""
         map = Map.Map(50, 80, 1000, 10, 6)
-        map.make_map()
+
+        #here we can map out our larger map structure
+        if self.level < 2:
+            map.make_greathall()
+        elif self.level >= 2 and self.level < 20:
+            map.make_map()
+        elif self.level >= 20:
+            map.make_cave()
+        else:
+            map.make_map()
         return map
 
     def generate_stairs(self):
@@ -37,7 +46,7 @@ class Level(object):
         """spit out a collection of monsters, will eventually take level into consideration"""
         mobs = []
         z = 0
-        while z < self.level:
+        while z < 10:  # 10 mobs per level for now
             c = 0
             while c == 0:
                 x = random.randint(0, self.map.width - 1)
