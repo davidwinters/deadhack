@@ -102,7 +102,6 @@ while not display.display_closed():
         if (mobs[i].x, mobs[i].y) == player.push:
             mobs[i] = player.attack(mobs[i])
             player.push = ""
-
     #if monster died change it's icon etc
 
     if player.push != "":

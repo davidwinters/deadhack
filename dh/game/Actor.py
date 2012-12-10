@@ -50,7 +50,7 @@ class Actor(object):
             print "You hit!",
             target.hp =- random.randint(1,self.damage)
             print "target hp:", target.hp 
-            return target
+        return target
         
 
     def move(self, level):

@@ -169,7 +169,7 @@ class Map(object):
                 if wat > 95:
                     self.map[x][y].blocked = True
                     self.map[x][y].block_sight = True
-    
+
     def make_map(self):
 
         num_rooms = 0
