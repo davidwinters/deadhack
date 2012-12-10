@@ -12,6 +12,8 @@ class Player(Actor.Actor):
         super(Player, self).__init__(**kwargs)
         self.char = "@"
         self.colour = libtcod.white
+        #push is a tuple of simple int coordinates on the level
+        #that is supposed to be the coords they move to next
         self.push = ""
         
         #stats

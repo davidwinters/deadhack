@@ -2,7 +2,7 @@
 #
 
 #from ..lib import libtcodpy as libtcod
-import math
+import math,random
 from dh.lib import libtcodpy as libtcod
 from dh.game import support
 
@@ -10,6 +10,7 @@ messages = support.message_queue
 
 class Actor(object):
     #generic game object
+    random.seed()
 
     #hand int to string convert for moves/pushes
     #used it for generating a random direction
@@ -41,6 +42,16 @@ class Actor(object):
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
         return(dx, dy)
+
+    def attack(self, target):
+        """ calculate attack """
+        if random.randint(1,100) < int(self.hitpct*100) and \
+        random.randint(1,100) > int(target.dodgepct*100):
+            print "You hit!",
+            target.hp =- random.randint(1,self.damage)
+            print "target hp:", target.hp 
+            return target
+        
 
     def move(self, level):
         """ attempt move from set push value """

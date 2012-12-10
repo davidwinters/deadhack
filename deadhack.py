@@ -69,7 +69,7 @@ while not display.display_closed():
     while(True):
         key = libtcod.console_wait_for_keypress(True)
         if key.vk == libtcod.KEY_SHIFT:
-            print 'shift!'
+            continue
         else:
             break
     #process key we're given and put into game objects
@@ -95,7 +95,18 @@ while not display.display_closed():
 
 
     #let player move first
-    player.move(levels[level_counter])
+    
+    #check if we're moving/attacking into a monster
+    mobs = levels[level_counter].mobs
+    for i in range(len(mobs)):
+        if (mobs[i].x, mobs[i].y) == player.push:
+            mobs[i] = player.attack(mobs[i])
+            player.push = ""
+
+    #if monster died change it's icon etc
+
+    if player.push != "":
+        player.move(levels[level_counter])
 
     # support.move(npc, current_level)
     for mob in levels[level_counter].mobs:
