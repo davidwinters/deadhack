@@ -91,7 +91,8 @@ mob = [
 #name, symbol, colour, maxhp, hp, hitpct, dodgepct, damage, aimethod
 ["Skeleton", "s", libtcod.white, 5, 5, .5, .1, 2, AIrandom],
 ["angry rat", "r", libtcod.dark_orange,  5, 5, .7, .1, 2, AIchase],
-["rat", "r", libtcod.orange, 5, 5, .5, .1, 1, AIchase]
+["rat", "r", libtcod.orange, 5, 5, .5, .1, 1, AIchase],
+["bat", "b", libtcod.darker_orange,  5, 5, .7, .1, 2, AIrandom]
 ]
 
 #mobline:
