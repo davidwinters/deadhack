@@ -47,8 +47,8 @@ class Actor(object):
         """ calculate attack """
         if random.randint(1,100) < int(self.hitpct*100) and \
         random.randint(1,100) > int(target.dodgepct*100):
-            print "You hit the " + target.name + "!",
-            target.hp =- random.randint(1,self.damage)
+            print "You hit the " + target.name + "!"
+            self.weapon.attack(target)
             print "target hp:", target.hp 
         return target
         

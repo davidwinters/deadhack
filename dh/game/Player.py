@@ -1,4 +1,4 @@
-from dh.game import Actor
+from dh.game import Actor, Weapon
 from ..lib import libtcodpy as libtcod
 
 #
@@ -22,3 +22,4 @@ class Player(Actor.Actor):
         self.hitpct = .8
         self.dodgepct = .5
         self.damage = 2
+        self.weapon = Weapon.Weapon()
