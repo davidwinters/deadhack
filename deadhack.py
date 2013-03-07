@@ -82,6 +82,11 @@ while not display.display_closed():
     #if esc - break out of game
     if key.vk == libtcod.KEY_ESCAPE:
         break
+    elif key.vk == libtcod.KEY_ENTER:
+        containers = levels[level_counter].containers
+        for i in range(len(containers)):
+            if (containers[i].x, containers[i].y) == (player.x, player.y):
+                containers[i].open()
 
     #see if we need to change the level
     if levelcheck >= 0:  # this part in particular feels REALLY ghetto
@@ -96,7 +101,7 @@ while not display.display_closed():
 
 
     #let player move first
-    
+
     #check if we're moving/attacking into a monster
     mobs = levels[level_counter].mobs
     for i in range(len(mobs)):
