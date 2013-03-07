@@ -57,6 +57,7 @@ while not display.display_closed():
     fov_map = display.calculate_fov(player, levels[level_counter].map)
     display.draw_map(mode, levels[level_counter].map, fov_map)
     display.draw_doodads(levels[level_counter].doodads, levels[level_counter].map)
+    display.draw_containers(levels[level_counter].containers, levels[level_counter].map)
     display.draw_cast(mode, levels[level_counter].mobs, player, fov_map)
     display.draw_gui(player, level_counter)
     #flush state to viewport this cycle

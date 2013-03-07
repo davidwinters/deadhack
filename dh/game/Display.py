@@ -87,6 +87,12 @@ class Display(object):
                     libtcod.console_set_foreground_color(self.con, libtcod.white)
                     libtcod.console_print_left(self.con, doodad.x, doodad.y, libtcod.BKGND_NONE, doodad.char)
 
+        def draw_containers(self, containers, map):
+            for container in containers:
+                if map.map[container.x][container.y].explored == True:
+                    libtcod.console_set_foreground_color(self.con, libtcod.white)
+                    libtcod.console_print_left(self.con, container.x, container.y, libtcod.BKGND_NONE, container.char)
+
         def display_closed(self):
             """ boolean is window closed (are we bailing?) """
             return libtcod.console_is_window_closed()

@@ -1,4 +1,4 @@
-from dh.game import Monster, Map, Doodad
+from dh.game import Monster, Map, Doodad, Container
 import random
 
 
@@ -10,6 +10,7 @@ class Level(object):
         self.map = self.generate_map()
         self.mobs = self.generate_mobs()
         self.doodads = self.generate_stairs()
+        self.containers = self.generate_containers()
 
     def generate_map(self):
         """right now just spits out a map, eventually will take level parameter to spit out a type"""
@@ -57,3 +58,19 @@ class Level(object):
                     c += 1
 
         return mobs
+
+    def generate_containers(self):
+        """i made this all by myself and it's totally not a copy paste of generate_mobs"""
+        chests = []
+        z = 0
+        while z < 10:  # 10 chests per level for now
+            c = 0
+            while c == 0:
+                x = random.randint(0, self.map.width - 1)
+                y = random.randint(0, self.map.height - 1)
+                if self.map.map[x][y].blocked == False:
+                    chests.append(Container.Container(x=x, y=y, name="Chest", char="c", contents=""))
+                    z += 1
+                    c += 1
+
+        return chests

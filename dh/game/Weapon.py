@@ -26,7 +26,6 @@ class StandardAttack(object):
         print "did", target.hp, "damage to", target.name
 
 
-
 class PainfulAttack(object):
     def attack(self, weapon, attacker, target):
         messages.append((random.choice(weapon.sounds), libtcod.white))
