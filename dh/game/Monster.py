@@ -68,6 +68,32 @@ class AIchase(object):
             messages.append(("GOTCHA", libtcod.white))
 
 
+class AIflee(object):
+    """ moves away from player """
+    def act(self, level, player):
+        """ """
+        #if we're less than 3sq from player calc a move away from them
+        if self.owner.distance_to(player) < 3:
+            self.runAway(level, player)
+        else:
+            self.doWhatever(level, player)
+
+    def runAway(self, level, player):
+        a, b = self.owner.calc_move_away(player.x, player.y)
+        self.owner.push = self.owner.x + a, self.owner.y + b
+        self.owner.move(level)
+
+    def doWhatever(self, level, player):
+        cast = level.mobs
+        map = level.map
+        self.owner.push = self.owner.x + random.randint(-1, 1), self.owner.y + random.randint(-1, 1)
+        xx, yy = self.owner.push
+        if map.is_blocked(xx, yy, cast):
+            self.owner.push = ""
+            return
+        self.owner.move(level)
+
+
 class AIxorn(object):
     """ moves towards player, doesn't give a fuck """
     def act(self, level, player):
@@ -92,6 +118,7 @@ mob = [
 ["Skeleton", "s", libtcod.white, 5, 5, .5, .1, 2, AIrandom],
 ["angry rat", "r", libtcod.dark_orange,  5, 5, .7, .1, 2, AIchase],
 ["rat", "r", libtcod.orange, 5, 5, .5, .1, 1, AIchase],
+["scared rat", "r", libtcod.light_orange, 5, 5, .5, .1, 1, AIflee],
 ["bat", "b", libtcod.darker_orange,  5, 5, .7, .1, 2, AIrandom]
 ]
 

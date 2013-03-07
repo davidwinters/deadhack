@@ -43,6 +43,17 @@ class Actor(object):
         dy = int(round(dy / distance))
         return(dx, dy)
 
+    def calc_move_away(self, target_x, target_y):
+        #vector from this to that and distance
+        dx = target_x - self.x
+        dy = target_y - self.y
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+
+        #normalize it to 1 and round
+        dx = int(round(dx / distance))
+        dy = int(round(dy / distance))
+        return(-1 * dx, -1 * dy)
+
     def attack(self, target):
         """ calculate attack """
         if random.randint(1,100) < int(self.hitpct*100) and \

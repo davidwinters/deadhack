@@ -5,6 +5,7 @@ from dh.game import support
 
 messages = support.message_queue
 
+
 class Container(object):
     def __init__(self, x, y, char, name, contents):
         self.char = char
