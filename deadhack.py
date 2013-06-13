@@ -1,4 +1,4 @@
-#
+#LEARN TO GIT goof
 # deadhack
 #
 #http://roguebasin.roguelikedevelopment.org/index.php?title=Complete_Roguelike_Tutorial,_using_python%2Blibtcod,_part_1
@@ -64,7 +64,7 @@ while not display.display_closed():
     display.flush()
 
     #
-    # INPUT
+    # INPUT WHAT A LOLERGOOF
     #
     #get user input for game loop
     while(True):
@@ -106,7 +106,9 @@ while not display.display_closed():
     mobs = levels[level_counter].mobs
     for i in range(len(mobs)):
         if (mobs[i].x, mobs[i].y) == player.push:
-            mobs[i] = player.attack(mobs[i])
+            mobs[i] = player.attack(mobs[i],mobs)
+            if mobs[i].dead == True:
+
             player.push = ""
     #if monster died change it's icon etc
 

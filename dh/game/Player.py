@@ -22,4 +22,4 @@ class Player(Actor.Actor):
         self.hitpct = .8
         self.dodgepct = .5
         self.damage = 2
-        self.weapon = Weapon.Weapon_StickOfHappiness
+        self.weapon = Weapon.Weapon_StickOfPunishment
