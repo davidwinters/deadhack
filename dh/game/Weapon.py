@@ -33,7 +33,14 @@ class PainfulAttack(object):
         target.hp -= damage
         print "did", target.hp, "damage to", target.name, ", but", weapon.minDamage, "to yourself."
 
-#it was stupid anyway
+
+class HealingAttack(object):
+    def attack(self, weapon, attacker, target):
+        messages.append((random.choice(weapon.sounds), libtcod.white))
+        damage = random.randint(1, weapon.maxDamage)
+        target.hp += damage
+        print "healed the", target.name, "for", damage, "points. You're so nice."
+
 
 # I'm pretty sure there's a way better way to do this.
 Weapon_StickOfPunishment = Weapon(StandardAttack(), ["thud", "whack", "bonk"])
